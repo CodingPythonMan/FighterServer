@@ -1,0 +1,175 @@
+@charset "UTF-8";
+
+.wrap{
+	width: 100%;
+	height: 3347px;
+	border: 1px solid #000000;
+	background: #D2D2D2;
+}
+
+.wrap > header{
+	width: 100%;
+	height: 188px;
+	border: 1px solid #000000;
+	background: #E2E2E2;
+}
+
+.wrap > header > .w_inner{
+	width: 1150px;
+	height: 32px;
+	margin: 0 auto;
+	border: 1px solid #000000;
+	background: #B2F2F2;
+}
+ 
+.wrap > header > .search_bar{
+	width: 100%;
+	height: 72px;
+	border: 1px solid #000000;
+	background: #D2D2D2;
+}
+
+.wrap > header > .gnb_wrap{
+	width: 100%;
+	height: 50px;
+	border: 1px solid #000000;
+	background: #DC143C;
+}
+
+.wrap_section{
+	width: 100%;
+	height: 3024px;
+	background: #FFD700;
+	float: left;
+}
+
+.wrap_align{
+	width: 1150px;
+	height: 3024px;
+	margin: 0 auto;
+	background: #B2F2F2;
+}
+
+.wrap_section > .wrap_align > .left_area{
+	width: 750px;
+	height: 2964px;
+	background: #DC143C;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .big_banner{
+ 	width: 750px;
+	height: 135px;
+	background: #2F4F4F;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .newsMenu{
+	width: 750px;
+	height: 763px;
+	margin-top:30px;
+	background: #00FFFF;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .storyMenu{
+	width: 750px;
+	height: 462px;
+	margin-top:70px;
+	background: #006400;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .shoppingMenu{
+	width: 750px;
+	height: 519px;
+	margin-top:70px;
+	background: #BDB76B;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .tvMenu{
+	width: 750px;
+	height: 531px;
+	margin-top:70px;
+	background: #FF4500;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .photoNewsMenu{
+	width: 750px;
+	height: 428px;
+	margin-top:70px;
+	background: #F5DEB3;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .left_area > .quick_menu{
+	width: 80px;
+	height: 179px;
+	margin-left:200px;
+	background: #8B4513;
+	float: left;
+}
+
+
+.wrap_section > .wrap_align > .right_area{
+	width: 350px;
+	height: 2229px;
+	background: #7CFC00;
+	margin-left: 50px;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .right_area > .shoplink_wrap{
+	width: 350px;
+	height: 135px;
+	margin-bottom:18px;
+	background: #9932CC;
+	float: left;
+}
+
+.wrap_section > .wrap_align > .right_area > .today_wrap{
+	width: 350px;
+	height: 135px;
+	background: #0000FF;
+	float: left;
+	
+}
+
+.wrap_section > .wrap_align > .right_area > .brand_widget{
+	width: 350px;
+	height: 135px;
+	margin-bottom:18px;
+	background: #0000FF;
+	float: left;
+}
+
+
+.wrap_section > .wrap_align > .right_area > .shopping_adbox{
+	width: 350px;
+	height: 1739px;
+	background: #FF00FF;
+	margin-top: 433px;
+	position: fixed;
+}
+
+
+.aside_shortcut{
+	width: 56px;
+	height: 523px;
+	background: #20B2AA;
+}
+
+.wrap > .footer_wrap{
+	width: 100%;
+	height: 134px;
+	background: #00FF7F;
+	float: left;
+}
+
+
+
+h1, h2, h3, h4{
+	display: none;
+}

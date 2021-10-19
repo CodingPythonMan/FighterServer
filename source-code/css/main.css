@@ -3,100 +3,96 @@
 .wrap{
 	width: 100%;
 	height: 3347px;
-	border: 1px solid #000000;
 	background: #D2D2D2;
 }
 
-.wrap > header{
-	width: 100%;
-	height: 188px;
-	border: 1px solid #000000;
+header{
+	min-height: 188px;
 	background: #E2E2E2;
 }
 
-.wrap > header > .w_inner{
-	width: 1150px;
+.w_inner{
+	width: 1130px;
 	height: 32px;
 	margin: 0 auto;
-	border: 1px solid #000000;
+	padding: 0 10px;
 	background: #B2F2F2;
 }
  
-.wrap > header > .search_bar{
+.search_bar{
 	width: 100%;
 	height: 72px;
-	border: 1px solid #000000;
 	background: #D2D2D2;
 }
 
-.wrap > header > .gnb_wrap{
+.gnb_wrap{
 	width: 100%;
 	height: 50px;
-	border: 1px solid #000000;
 	background: #DC143C;
 }
 
 .wrap_section{
 	width: 100%;
-	height: 3024px;
+	height: 3074px;
 	background: #FFD700;
-	float: left;
 }
 
 .wrap_align{
 	width: 1150px;
-	height: 3024px;
+	height: 2964px;
 	margin: 0 auto;
+	padding: 20px 10px 40px;
 	background: #B2F2F2;
+	position: relative;
 }
 
-.wrap_section > .wrap_align > .left_area{
+.left_area{
 	width: 750px;
-	height: 2964px;
+	height: 100%;
 	background: #DC143C;
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .big_banner{
+.big_banner{
  	width: 750px;
 	height: 135px;
 	background: #2F4F4F;
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .newsMenu{
+.newsMenu{
 	width: 750px;
-	height: 763px;
+	height: 705px;
 	margin-top:30px;
 	background: #00FFFF;
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .storyMenu{
+.storyMenu{
 	width: 750px;
 	height: 462px;
-	margin-top:70px;
+	margin-top:30px;
 	background: #006400;
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .shoppingMenu{
+.shoppingMenu{
 	width: 750px;
 	height: 519px;
-	margin-top:70px;
+	margin-top:30px;
 	background: #BDB76B;
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .tvMenu{
+.tvMenu{
 	width: 750px;
 	height: 531px;
-	margin-top:70px;
+	margin-top:30px;
 	background: #FF4500;
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .photoNewsMenu{
+.photoNewsMenu{
 	width: 750px;
 	height: 428px;
 	margin-top:70px;
@@ -104,16 +100,7 @@
 	float: left;
 }
 
-.wrap_section > .wrap_align > .left_area > .quick_menu{
-	width: 80px;
-	height: 179px;
-	margin-left:200px;
-	background: #8B4513;
-	float: left;
-}
-
-
-.wrap_section > .wrap_align > .right_area{
+.right_area{
 	width: 350px;
 	height: 2229px;
 	background: #7CFC00;
@@ -121,7 +108,7 @@
 	float: left;
 }
 
-.wrap_section > .wrap_align > .right_area > .shoplink_wrap{
+.shoplink_wrap{
 	width: 350px;
 	height: 135px;
 	margin-bottom:18px;
@@ -129,7 +116,7 @@
 	float: left;
 }
 
-.wrap_section > .wrap_align > .right_area > .today_wrap{
+.today_wrap{
 	width: 350px;
 	height: 135px;
 	background: #0000FF;
@@ -137,7 +124,7 @@
 	
 }
 
-.wrap_section > .wrap_align > .right_area > .brand_widget{
+.brand_widget{
 	width: 350px;
 	height: 135px;
 	margin-bottom:18px;
@@ -146,26 +133,21 @@
 }
 
 
-.wrap_section > .wrap_align > .right_area > .shopping_adbox{
+.shopping_adbox{
 	width: 350px;
 	height: 1739px;
 	background: #FF00FF;
 	margin-top: 433px;
-	position: fixed;
-}
-
-
-.aside_shortcut{
-	width: 56px;
-	height: 523px;
-	background: #20B2AA;
+	
 }
 
 .wrap > .footer_wrap{
 	width: 100%;
-	height: 134px;
+	height: 104px;
 	background: #00FF7F;
+	
 	float: left;
+	
 }
 
 

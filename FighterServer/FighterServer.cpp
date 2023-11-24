@@ -245,12 +245,12 @@ void FighterServer::ReadProc(Session* session)
 	while (1)
 	{
 		// Peek 전에 오류 나버린다.
-		if (session->RecvBuffer.GetUseSize() <= sizeof(PACKET_HEADER))
+		if (session->RecvBuffer.GetUseSize() <= HEADER_SIZE)
 			break;
 
 		PACKET_HEADER header;
-		session->RecvBuffer.Peek((char*)&header, sizeof(PACKET_HEADER));
-		if (session->RecvBuffer.GetUseSize() < sizeof(PACKET_HEADER) + header.BySize)
+		session->RecvBuffer.Peek((char*)&header, HEADER_SIZE);
+		if (session->RecvBuffer.GetUseSize() < HEADER_SIZE + header.BySize)
 			break;
 
 		// 프로토콜 코드가 맞지 않다면 내보낸다.
@@ -259,7 +259,7 @@ void FighterServer::ReadProc(Session* session)
 
 		// 마샬링
 		char message[MAX_PACKET_SIZE];
-		retval = session->RecvBuffer.Dequeue(message, sizeof(PACKET_HEADER)+header.BySize);
+		retval = session->RecvBuffer.Dequeue(message, HEADER_SIZE+header.BySize);
 
 		PacketType type = (PacketType)(((PACKET_HEADER*)message)->ByType);
 		switch (type)
@@ -267,11 +267,11 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_MOVE_START:
 		{
 			int pos = HEADER_SIZE;
-			unsigned char Move = (unsigned char)*(message + pos);
+			unsigned char Move = *(unsigned char*)(message + pos);
 			pos += sizeof(unsigned char);
-			short X = (short)*(message + pos);
+			short X = *(short*)(message + pos);
 			pos += sizeof(X);
-			short Y = (short)*(message + pos);
+			short Y = *(short*)(message + pos);
 			
 			session->_Player->_MoveType = (MoveType)Move;
 			if (true == session->_Player->MovePos(X, Y, true))
@@ -290,7 +290,7 @@ void FighterServer::ReadProc(Session* session)
 			packet.PutData((char*)&header, HEADER_SIZE);
 
 			packet << session->ID;
-			packet << (unsigned char)Move;
+			packet << Move;
 			packet << X;
 			packet << Y;
 
@@ -305,11 +305,11 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_MOVE_STOP:
 		{
 			int pos = HEADER_SIZE;
-			unsigned char Direct = (unsigned char)*(message + pos);
+			unsigned char Direct = *(unsigned char*)(message + pos);
 			pos += sizeof(unsigned char);
-			short X = (short)*(message + pos);
+			short X = *(short*)(message + pos);
 			pos += sizeof(X);
-			short Y = (short)*(message + pos);
+			short Y = *(short*)(message + pos);
 
 			session->_Player->_Direct = (Direction)Direct;
 			if(true == session->_Player->MovePos(X, Y, false))
@@ -328,7 +328,7 @@ void FighterServer::ReadProc(Session* session)
 			packet.PutData((char*)&header, HEADER_SIZE);
 
 			packet << session->ID;
-			packet << (unsigned char)Direct;
+			packet << Direct;
 			packet << X;
 			packet << Y;
 
@@ -343,11 +343,11 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_ATTACK_001:
 		{
 			int pos = HEADER_SIZE;
-			unsigned char Direct = (unsigned char)*(message + pos);
+			unsigned char Direct = *(unsigned char*)(message + pos);
 			pos += sizeof(Direct);
-			short X = (short)*(message + pos);
+			short X = *(short*)(message + pos);
 			pos += sizeof(X);
-			short Y = (short)*(message + pos);
+			short Y = *(short*)(message + pos);
 
 			session->_Player->_Direct = (Direction)Direct;
 
@@ -373,11 +373,11 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_ATTACK_002:
 		{
 			int pos = HEADER_SIZE;
-			unsigned char Direct = (unsigned char)*(message + pos);
+			unsigned char Direct = *(unsigned char*)(message + pos);
 			pos += sizeof(Direct);
-			short X = (short)*(message + pos);
+			short X = *(short*)(message + pos);
 			pos += sizeof(X);
-			short Y = (short)*(message + pos);
+			short Y = *(short*)(message + pos);
 
 			session->_Player->_Direct = (Direction)Direct;
 
@@ -402,11 +402,11 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_ATTACK_003:
 		{
 			int pos = HEADER_SIZE;
-			unsigned char Direct = (unsigned char)*(message + pos);
+			unsigned char Direct = *(unsigned char*)(message + pos);
 			pos += sizeof(Direct);
-			short X = (short)*(message + pos);
+			short X = *(short*)(message + pos);
 			pos += sizeof(X);
-			short Y = (short)*(message + pos);
+			short Y = *(short*)(message + pos);
 
 			session->_Player->_Direct = (Direction)Direct;
 

@@ -203,7 +203,7 @@ void FighterServer::AcceptProc()
 
 		CreateOtherChar << (unsigned char)Direction::RR;
 		CreateOtherChar << UniqueID;
-		player->NotifyPlayer(&X, &Y, &HP);
+		(*iter)->_Player->NotifyPlayer(&X, &Y, &HP);
 		CreateOtherChar << X;
 		CreateOtherChar << Y;
 		CreateOtherChar << HP;
@@ -267,15 +267,13 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_MOVE_START:
 		{
 			int pos = HEADER_SIZE;
-			int ID = (int)*(message + pos);
-			pos += sizeof(ID);
-			MoveType Move = (MoveType)*(message + pos);
-			pos += sizeof(Move);
+			unsigned char Move = (unsigned char)*(message + pos);
+			pos += sizeof(unsigned char);
 			short X = (short)*(message + pos);
 			pos += sizeof(X);
 			short Y = (short)*(message + pos);
 			
-			session->_Player->_MoveType = Move;
+			session->_Player->_MoveType = (MoveType)Move;
 			if (true == session->_Player->MovePos(X, Y, true))
 			{
 				Disconnect(session);
@@ -291,7 +289,7 @@ void FighterServer::ReadProc(Session* session)
 			
 			packet.PutData((char*)&header, HEADER_SIZE);
 
-			packet << ID;
+			packet << session->ID;
 			packet << (unsigned char)Move;
 			packet << X;
 			packet << Y;
@@ -307,13 +305,13 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_MOVE_STOP:
 		{
 			int pos = HEADER_SIZE;
-			Direction Direct = (Direction)*(message + pos);
-			pos += sizeof(Direct);
+			unsigned char Direct = (unsigned char)*(message + pos);
+			pos += sizeof(unsigned char);
 			short X = (short)*(message + pos);
 			pos += sizeof(X);
 			short Y = (short)*(message + pos);
 
-			session->_Player->_Direct = Direct;
+			session->_Player->_Direct = (Direction)Direct;
 			if(true == session->_Player->MovePos(X, Y, false))
 			{
 				Disconnect(session);
@@ -323,11 +321,13 @@ void FighterServer::ReadProc(Session* session)
 			Packet packet;
 			PACKET_HEADER header;
 			header.ByCode = 0x89;
-			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.BySize = sizeof(int) + sizeof(unsigned char) 
+				+ sizeof(short) + sizeof(short);
 			header.ByType = (unsigned char)PacketType::FIGHTER_REP_MOVE_STOP;
 
 			packet.PutData((char*)&header, HEADER_SIZE);
 
+			packet << session->ID;
 			packet << (unsigned char)Direct;
 			packet << X;
 			packet << Y;
@@ -343,13 +343,13 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_ATTACK_001:
 		{
 			int pos = HEADER_SIZE;
-			Direction Direct = (Direction) * (message + pos);
+			unsigned char Direct = (unsigned char)*(message + pos);
 			pos += sizeof(Direct);
 			short X = (short)*(message + pos);
 			pos += sizeof(X);
 			short Y = (short)*(message + pos);
 
-			session->_Player->_Direct = Direct;
+			session->_Player->_Direct = (Direction)Direct;
 
 			Packet packet;
 			PACKET_HEADER header;
@@ -373,13 +373,13 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_ATTACK_002:
 		{
 			int pos = HEADER_SIZE;
-			Direction Direct = (Direction) * (message + pos);
+			unsigned char Direct = (unsigned char)*(message + pos);
 			pos += sizeof(Direct);
 			short X = (short)*(message + pos);
 			pos += sizeof(X);
 			short Y = (short)*(message + pos);
 
-			session->_Player->_Direct = Direct;
+			session->_Player->_Direct = (Direction)Direct;
 
 			Packet packet;
 			PACKET_HEADER header;
@@ -402,13 +402,13 @@ void FighterServer::ReadProc(Session* session)
 		case PacketType::FIGHTER_QRY_ATTACK_003:
 		{
 			int pos = HEADER_SIZE;
-			Direction Direct = (Direction) * (message + pos);
+			unsigned char Direct = (unsigned char)*(message + pos);
 			pos += sizeof(Direct);
 			short X = (short)*(message + pos);
 			pos += sizeof(X);
 			short Y = (short)*(message + pos);
 
-			session->_Player->_Direct = Direct;
+			session->_Player->_Direct = (Direction)Direct;
 
 			Packet packet;
 			PACKET_HEADER header;

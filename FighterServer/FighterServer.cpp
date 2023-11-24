@@ -154,26 +154,41 @@ void FighterServer::AcceptProc()
 	session->_Player = player;
 
 	// 1. 당사자에게 생성됐음을 알려주기
-	FIGHTER_CMD_CREATE_MY_CHARACTER packet;
-	packet.ByCode = 0x89;
-	packet.BySize = sizeof(FIGHTER_CMD_CREATE_MY_CHARACTER);
-	packet.ByType = (unsigned char)PacketType::FIGHTER_CMD_CREATE_MY_CHARACTER;
-	packet.Direct = Direction::RR;
-	packet.ID = UniqueID;
-	player->NotifyPlayer(&packet.X, &packet.Y, &packet.HP);
-	SendUnicast(session, (char*)&packet, sizeof(PACKET_HEADER)+packet.BySize);
+	Packet CreateMyChar;
+	PACKET_HEADER header;
+	header.ByCode = 0x89;
+	header.BySize = sizeof(int) + sizeof(unsigned char)
+		+ sizeof(short) + sizeof(short) + sizeof(unsigned char);
+	header.ByType = (unsigned char)PacketType::FIGHTER_CMD_CREATE_MY_CHARACTER;
+	
+	CreateMyChar.PutData((char*)&header, HEADER_SIZE);
+
+	CreateMyChar << (unsigned char)Direction::RR;
+	CreateMyChar << UniqueID;
+	short X;
+	short Y;
+	unsigned char HP;
+	player->NotifyPlayer(&X, &Y, &HP);
+	CreateMyChar << X;
+	CreateMyChar << Y;
+	CreateMyChar << HP;
+	SendUnicast(session, CreateMyChar.GetBufferPtr(), HEADER_SIZE+header.BySize);
 
 	clientSocks.push_back(session);
 
 	// 2. 다른 사람에게 알려주기
-	FIGHTER_CMD_CREATE_OTHER_CHARACTER otherPacket;
-	otherPacket.ByCode = 0x89;
-	otherPacket.BySize = sizeof(FIGHTER_CMD_CREATE_OTHER_CHARACTER);
-	otherPacket.ByType = (unsigned char)PacketType::FIGHTER_CMD_CREATE_OTHER_CHARACTER;
-	otherPacket.Direct = Direction::RR;
-	otherPacket.ID = UniqueID;
-	player->NotifyPlayer(&otherPacket.X, &otherPacket.Y, &otherPacket.HP);
-	SendBroadcast(session, (char*)&otherPacket, sizeof(PACKET_HEADER)+otherPacket.BySize);
+	Packet CreateOtherChar;
+	header.ByType = (unsigned char)PacketType::FIGHTER_CMD_CREATE_OTHER_CHARACTER;
+
+	CreateOtherChar.PutData((char*)&header, HEADER_SIZE);
+
+	CreateOtherChar << (unsigned char)Direction::RR;
+	CreateOtherChar << UniqueID;
+	player->NotifyPlayer(&X, &Y, &HP);
+	CreateOtherChar << X;
+	CreateOtherChar << Y;
+	CreateOtherChar << HP;
+	SendBroadcast(session, CreateOtherChar.GetBufferPtr(), HEADER_SIZE+header.BySize);
 
 	// 3. 다른 사람 위치 받기
 	MyList<Session*>::iterator iter;
@@ -182,11 +197,17 @@ void FighterServer::AcceptProc()
 		if (*iter == session)
 			continue;
 
-		otherPacket.Direct = (*iter)->_Player->_Direct;
-		otherPacket.ID = (*iter)->ID;
-		(*iter)->_Player->NotifyPlayer(&otherPacket.X, &otherPacket.Y, &otherPacket.HP);
+		CreateOtherChar.Clear();
 
-		SendUnicast(session, (char*)&otherPacket, sizeof(PACKET_HEADER) + otherPacket.BySize);
+		CreateOtherChar.PutData((char*)&header, HEADER_SIZE);
+
+		CreateOtherChar << (unsigned char)Direction::RR;
+		CreateOtherChar << UniqueID;
+		player->NotifyPlayer(&X, &Y, &HP);
+		CreateOtherChar << X;
+		CreateOtherChar << Y;
+		CreateOtherChar << HP;
+		SendUnicast(session, CreateOtherChar.GetBufferPtr(), HEADER_SIZE + header.BySize);
 	}
 
 	// UniqueID 증가
@@ -245,73 +266,105 @@ void FighterServer::ReadProc(Session* session)
 		{
 		case PacketType::FIGHTER_QRY_MOVE_START:
 		{
-			Packet packet;
-
-
-
-			FIGHTER_QRY_MOVE_START packet = *((FIGHTER_QRY_MOVE_START*)message);
-			session->_Player->_MoveType = packet.Move;
-			if (true == session->_Player->MovePos(packet.X, packet.Y, true))
+			int pos = HEADER_SIZE;
+			int ID = (int)*(message + pos);
+			pos += sizeof(ID);
+			MoveType Move = (MoveType)*(message + pos);
+			pos += sizeof(Move);
+			short X = (short)*(message + pos);
+			pos += sizeof(X);
+			short Y = (short)*(message + pos);
+			
+			session->_Player->_MoveType = Move;
+			if (true == session->_Player->MovePos(X, Y, true))
 			{
 				Disconnect(session);
 				break;
 			}
 
-			FIGHTER_REP_MOVE_START response;
-			response.ByCode = 0x89;
-			response.BySize = sizeof(FIGHTER_REP_MOVE_START);
-			response.ByType = (unsigned char)PacketType::FIGHTER_REP_MOVE_START;
-			response.Move = session->_Player->_MoveType;
-			response.ID = session->ID;
-			response.X = packet.X;
-			response.Y = packet.Y;
+			Packet packet;
+			PACKET_HEADER header;
+			header.ByCode = 0x89;
+			header.BySize = sizeof(int) + sizeof(unsigned char) 
+				+ sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_MOVE_START;
+			
+			packet.PutData((char*)&header, HEADER_SIZE);
+
+			packet << ID;
+			packet << (unsigned char)Move;
+			packet << X;
+			packet << Y;
 
 			// 이 유저가 움직이기 시작했다는 것을 모두에게 알려줘야 한다.
-			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER)+response.BySize);
+			SendBroadcast(session, packet.GetBufferPtr(), HEADER_SIZE + header.BySize);
 		
 			// 로그
 			wprintf(L"[Move Start] ID : %d, X : %d, Y : %d, Direction : %d \n", 
-				session->ID, packet.X, packet.Y, session->_Player->_MoveType);
+				session->ID, X, Y, session->_Player->_MoveType);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_MOVE_STOP:
 		{
-			FIGHTER_QRY_MOVE_STOP packet = *((FIGHTER_QRY_MOVE_STOP*)message);
-			session->_Player->_Direct = packet.Direct;
-			if(true == session->_Player->MovePos(packet.X, packet.Y, false))
+			int pos = HEADER_SIZE;
+			Direction Direct = (Direction)*(message + pos);
+			pos += sizeof(Direct);
+			short X = (short)*(message + pos);
+			pos += sizeof(X);
+			short Y = (short)*(message + pos);
+
+			session->_Player->_Direct = Direct;
+			if(true == session->_Player->MovePos(X, Y, false))
 			{
 				Disconnect(session);
 				break;
 			}
 
-			FIGHTER_REP_MOVE_STOP response;
-			response.ByCode = 0x89;
-			response.BySize = sizeof(FIGHTER_REP_MOVE_STOP);
-			response.ByType = (unsigned char)PacketType::FIGHTER_REP_MOVE_STOP;
-			response.Direct = session->_Player->_Direct;
-			response.ID = session->ID;
-			response.X = packet.X;
-			response.Y = packet.Y;
-			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
-			
+			Packet packet;
+			PACKET_HEADER header;
+			header.ByCode = 0x89;
+			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_MOVE_STOP;
+
+			packet.PutData((char*)&header, HEADER_SIZE);
+
+			packet << (unsigned char)Direct;
+			packet << X;
+			packet << Y;
+
+			// 이 유저가 움직이기 멈췄다는 것을 모두에게 알려줘야 한다.
+			SendBroadcast(session, packet.GetBufferPtr(), HEADER_SIZE + header.BySize);
+
 			// 로그
 			wprintf(L"[Move Stop] ID : %d, X : %d, Y : %d, Direct : %d \n", 
-				session->ID, packet.X, packet.Y, session->_Player->_Direct);
+				session->ID, X, Y, session->_Player->_Direct);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_ATTACK_001:
 		{
-			FIGHTER_QRY_ATTACK_001 packet = *((FIGHTER_QRY_ATTACK_001*)message);
-			session->_Player->_Direct = packet.Direct;
+			int pos = HEADER_SIZE;
+			Direction Direct = (Direction) * (message + pos);
+			pos += sizeof(Direct);
+			short X = (short)*(message + pos);
+			pos += sizeof(X);
+			short Y = (short)*(message + pos);
 
-			FIGHTER_REP_ATTACK_001 response;
-			response.ByCode = 0x89;
-			response.BySize = sizeof(FIGHTER_REP_ATTACK_001);
-			response.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
-			response.Direct = session->_Player->_Direct;
-			response.ID = session->ID;
-			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
-			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
+			session->_Player->_Direct = Direct;
+
+			Packet packet;
+			PACKET_HEADER header;
+			header.ByCode = 0x89;
+			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
+
+			packet.PutData((char*)&header, HEADER_SIZE);
+
+			packet << session->ID;
+			packet << (unsigned char)Direct;
+			packet << X;
+			packet << Y;
+			session->_Player->NotifyPlayer(&X, &Y, nullptr);
+			SendBroadcast(session, packet.GetBufferPtr(), HEADER_SIZE + header.BySize);
 
 			// 충돌처리
 			CheckDamage(session, ATTACK_TYPE::ATTACK001);
@@ -319,35 +372,59 @@ void FighterServer::ReadProc(Session* session)
 		break;
 		case PacketType::FIGHTER_QRY_ATTACK_002:
 		{
-			FIGHTER_QRY_ATTACK_002 packet = *((FIGHTER_QRY_ATTACK_002*)message);
-			session->_Player->_Direct = packet.Direct;
+			int pos = HEADER_SIZE;
+			Direction Direct = (Direction) * (message + pos);
+			pos += sizeof(Direct);
+			short X = (short)*(message + pos);
+			pos += sizeof(X);
+			short Y = (short)*(message + pos);
 
-			FIGHTER_REP_ATTACK_002 response;
-			response.ByCode = 0x89;
-			response.BySize = sizeof(FIGHTER_REP_ATTACK_002);
-			response.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_002;
-			response.Direct = session->_Player->_Direct;
-			response.ID = session->ID;
-			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
-			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
-			
+			session->_Player->_Direct = Direct;
+
+			Packet packet;
+			PACKET_HEADER header;
+			header.ByCode = 0x89;
+			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
+
+			packet.PutData((char*)&header, HEADER_SIZE);
+
+			packet << session->ID;
+			packet << (unsigned char)Direct;
+			packet << X;
+			packet << Y;
+			session->_Player->NotifyPlayer(&X, &Y, nullptr);
+			SendBroadcast(session, packet.GetBufferPtr(), HEADER_SIZE + header.BySize);
+
 			CheckDamage(session, ATTACK_TYPE::ATTACK002);
 		}
 		break;
 		case PacketType::FIGHTER_QRY_ATTACK_003:
 		{
-			FIGHTER_QRY_ATTACK_003 packet = *((FIGHTER_QRY_ATTACK_003*)message);
-			session->_Player->_Direct = packet.Direct;
+			int pos = HEADER_SIZE;
+			Direction Direct = (Direction) * (message + pos);
+			pos += sizeof(Direct);
+			short X = (short)*(message + pos);
+			pos += sizeof(X);
+			short Y = (short)*(message + pos);
 
-			FIGHTER_REP_ATTACK_003 response;
-			response.ByCode = 0x89;
-			response.BySize = sizeof(FIGHTER_REP_ATTACK_003);
-			response.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_003;
-			response.Direct = session->_Player->_Direct;
-			response.ID = session->ID;
-			session->_Player->NotifyPlayer(&response.X, &response.Y, nullptr);
-			SendBroadcast(session, (char*)&response, sizeof(PACKET_HEADER) + response.BySize);
-		
+			session->_Player->_Direct = Direct;
+
+			Packet packet;
+			PACKET_HEADER header;
+			header.ByCode = 0x89;
+			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
+
+			packet.PutData((char*)&header, HEADER_SIZE);
+
+			packet << session->ID;
+			packet << (unsigned char)Direct;
+			packet << X;
+			packet << Y;
+			session->_Player->NotifyPlayer(&X, &Y, nullptr);
+			SendBroadcast(session, packet.GetBufferPtr(), HEADER_SIZE + header.BySize);
+
 			CheckDamage(session, ATTACK_TYPE::ATTACK003);
 		}
 		break;
@@ -388,12 +465,6 @@ void FighterServer::WriteProc(Session* session)
 
 void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 {
-	FIGHTER_CMD_DAMAGE damage;
-	damage.ByCode = 0x89;
-	damage.BySize = sizeof(FIGHTER_CMD_DAMAGE);
-	damage.ByType = (unsigned char)PacketType::FIGHTER_CMD_DAMAGE;
-	damage.AttackID = session->ID;
-
 	MyList<Session*>::iterator iter;
 	for (iter = clientSocks.begin(); iter != clientSocks.end(); ++iter)
 	{
@@ -403,9 +474,19 @@ void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 		bool result = session->_Player->OnAttack((*iter)->_Player, attackType);
 		if (result)
 		{
-			damage.DamageID = (*iter)->ID;
-			(*iter)->_Player->NotifyPlayer(nullptr, nullptr, &damage.DamageHP);
-			SendBroadcast(nullptr, (char*)&damage, sizeof(PACKET_HEADER) + damage.BySize);
+			Packet Damage;
+			PACKET_HEADER header;
+			header.ByCode = 0x89;
+			header.BySize = sizeof(int) + sizeof(int) + sizeof(unsigned char);
+			header.ByType = (unsigned char)PacketType::FIGHTER_CMD_DAMAGE;
+
+			Damage.PutData((char*)&header, HEADER_SIZE);
+
+			Damage << session->ID;
+			Damage << (*iter)->ID;
+			unsigned char DamageHP;
+			(*iter)->_Player->NotifyPlayer(nullptr, nullptr, &DamageHP);
+			SendBroadcast(nullptr, Damage.GetBufferPtr(), HEADER_SIZE + header.BySize);
 
 			// 어택 로그
 			wprintf(L"[Attack] Attack ID : %d, Attacked ID : %d, AttackType : %d \n",
@@ -413,12 +494,13 @@ void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 
 			if ((*iter)->_Player->IsDead())
 			{
-				FIGHTER_CMD_DELETE_CHARACTER del;
-				del.ByCode = 0x89;
-				del.BySize = sizeof(FIGHTER_CMD_DELETE_CHARACTER);
-				del.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
-				del.ID = (*iter)->ID;
-				SendBroadcast(nullptr, (char*)&del, sizeof(PACKET_HEADER) + del.BySize);
+				Packet Delete;
+				header.BySize = sizeof(int);
+
+				Delete.PutData((char*)&header, HEADER_SIZE);
+
+				Damage << (*iter)->ID;
+				SendBroadcast(nullptr, Delete.GetBufferPtr(), HEADER_SIZE + header.BySize);
 
 				// 죽었으니 연결을 끊어줘야 한다.
 				Disconnect(*iter);
@@ -453,12 +535,13 @@ void FighterServer::SendBroadcast(Session* session, char* message, int size)
 void FighterServer::Disconnect(Session* session)
 {
 	// 1. Delete 패킷 전송
-	FIGHTER_CMD_DELETE_CHARACTER packet;
-	packet.ByCode = 0x89;
-	packet.BySize = sizeof(FIGHTER_CMD_DELETE_CHARACTER);
-	packet.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
-	packet.ID = session->ID;
-	SendBroadcast(session, (char*)&packet, sizeof(PACKET_HEADER) + packet.BySize);
+	Packet Delete;
+	PACKET_HEADER header;
+	header.ByCode = 0x89;
+	header.BySize = sizeof(int);
+	header.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
+	Delete << session->ID;
+	SendBroadcast(session, Delete.GetBufferPtr(), HEADER_SIZE+header.BySize);
 
 	// Session 제거 알려주기
 	wprintf(L"[Client Disconnect] ID : %d, IP : %s, Port : %d\n",

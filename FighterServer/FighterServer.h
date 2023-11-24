@@ -11,7 +11,6 @@
 
 #define SERVER_PORT 5000
 #define MAX_CLIENT 64
-#define MAX_PACKET_SIZE 50
 #define WAIT 20
 
 struct Session {
@@ -50,6 +49,7 @@ private:
 
 	void SendUnicast(Session* session, char* message, int size);
 	void SendBroadcast(Session* session, char* message, int size);
+
 	void Disconnect(Session* session);
 	void DeleteSessions();
 

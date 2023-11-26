@@ -162,9 +162,9 @@ void FighterServer::AcceptProc()
 	header.ByType = (unsigned char)PacketType::FIGHTER_CMD_CREATE_MY_CHARACTER;
 	
 	CreateMyChar.PutData((char*)&header, HEADER_SIZE);
-
-	CreateMyChar << (unsigned char)Direction::RR;
+	
 	CreateMyChar << UniqueID;
+	CreateMyChar << (unsigned char)Direction::RR;
 	short X;
 	short Y;
 	unsigned char HP;
@@ -182,8 +182,8 @@ void FighterServer::AcceptProc()
 
 	CreateOtherChar.PutData((char*)&header, HEADER_SIZE);
 
-	CreateOtherChar << (unsigned char)Direction::RR;
 	CreateOtherChar << UniqueID;
+	CreateOtherChar << (unsigned char)Direction::RR;
 	player->NotifyPlayer(&X, &Y, &HP);
 	CreateOtherChar << X;
 	CreateOtherChar << Y;
@@ -201,8 +201,8 @@ void FighterServer::AcceptProc()
 
 		CreateOtherChar.PutData((char*)&header, HEADER_SIZE);
 
+		CreateOtherChar << (*iter)->ID;
 		CreateOtherChar << (unsigned char)Direction::RR;
-		CreateOtherChar << UniqueID;
 		(*iter)->_Player->NotifyPlayer(&X, &Y, &HP);
 		CreateOtherChar << X;
 		CreateOtherChar << Y;
@@ -389,7 +389,7 @@ void FighterServer::ReadProc(Session* session)
 
 			packet.PutData((char*)&header, HEADER_SIZE);
 
-			packet << session->ID;
+			packet << (session->ID);
 			packet << (unsigned char)Direct;
 			packet << X;
 			packet << Y;
@@ -418,7 +418,7 @@ void FighterServer::ReadProc(Session* session)
 
 			packet.PutData((char*)&header, HEADER_SIZE);
 
-			packet << session->ID;
+			packet << (session->ID);
 			packet << (unsigned char)Direct;
 			packet << X;
 			packet << Y;
@@ -540,7 +540,10 @@ void FighterServer::Disconnect(Session* session)
 	header.ByCode = 0x89;
 	header.BySize = sizeof(int);
 	header.ByType = (unsigned char)PacketType::FIGHTER_CMD_DELETE_CHARACTER;
+
+	Delete.PutData((char*)&header, HEADER_SIZE);
 	Delete << session->ID;
+
 	SendBroadcast(session, Delete.GetBufferPtr(), HEADER_SIZE+header.BySize);
 
 	// Session 제거 알려주기

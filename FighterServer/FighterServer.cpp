@@ -141,6 +141,8 @@ void FighterServer::AcceptProc()
 	if (clientSock == INVALID_SOCKET)
 		return;
 
+	Direction FirstDirection = Direction::LL;
+
 	Session* session = new Session;
 	session->Sock = clientSock;
 	session->ID = UniqueID;
@@ -164,7 +166,7 @@ void FighterServer::AcceptProc()
 	CreateMyChar.PutData((char*)&header, HEADER_SIZE);
 	
 	CreateMyChar << UniqueID;
-	CreateMyChar << (unsigned char)Direction::RR;
+	CreateMyChar << (unsigned char)FirstDirection;
 	short X;
 	short Y;
 	unsigned char HP;
@@ -183,7 +185,7 @@ void FighterServer::AcceptProc()
 	CreateOtherChar.PutData((char*)&header, HEADER_SIZE);
 
 	CreateOtherChar << UniqueID;
-	CreateOtherChar << (unsigned char)Direction::RR;
+	CreateOtherChar << (unsigned char)FirstDirection;
 	player->NotifyPlayer(&X, &Y, &HP);
 	CreateOtherChar << X;
 	CreateOtherChar << Y;
@@ -202,7 +204,7 @@ void FighterServer::AcceptProc()
 		CreateOtherChar.PutData((char*)&header, HEADER_SIZE);
 
 		CreateOtherChar << (*iter)->ID;
-		CreateOtherChar << (unsigned char)Direction::RR;
+		CreateOtherChar << (unsigned char)(*iter)->_Player->_Direct;
 		(*iter)->_Player->NotifyPlayer(&X, &Y, &HP);
 		CreateOtherChar << X;
 		CreateOtherChar << Y;
@@ -354,13 +356,13 @@ void FighterServer::ReadProc(Session* session)
 			Packet packet;
 			PACKET_HEADER header;
 			header.ByCode = 0x89;
-			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.BySize = sizeof(int) + sizeof(unsigned char) + sizeof(short) + sizeof(short);
 			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
 
 			packet.PutData((char*)&header, HEADER_SIZE);
 
 			packet << session->ID;
-			packet << (unsigned char)Direct;
+			packet << Direct;
 			packet << X;
 			packet << Y;
 			session->_Player->NotifyPlayer(&X, &Y, nullptr);
@@ -384,13 +386,13 @@ void FighterServer::ReadProc(Session* session)
 			Packet packet;
 			PACKET_HEADER header;
 			header.ByCode = 0x89;
-			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
-			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
+			header.BySize = sizeof(int) + sizeof(unsigned char) + sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_002;
 
 			packet.PutData((char*)&header, HEADER_SIZE);
 
-			packet << (session->ID);
-			packet << (unsigned char)Direct;
+			packet << session->ID;
+			packet << Direct;
 			packet << X;
 			packet << Y;
 			session->_Player->NotifyPlayer(&X, &Y, nullptr);
@@ -413,13 +415,13 @@ void FighterServer::ReadProc(Session* session)
 			Packet packet;
 			PACKET_HEADER header;
 			header.ByCode = 0x89;
-			header.BySize = sizeof(unsigned char) + sizeof(short) + sizeof(short);
-			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_001;
+			header.BySize = sizeof(int) + sizeof(unsigned char)  + sizeof(short) + sizeof(short);
+			header.ByType = (unsigned char)PacketType::FIGHTER_REP_ATTACK_003;
 
 			packet.PutData((char*)&header, HEADER_SIZE);
 
-			packet << (session->ID);
-			packet << (unsigned char)Direct;
+			packet << session->ID;
+			packet << Direct;
 			packet << X;
 			packet << Y;
 			session->_Player->NotifyPlayer(&X, &Y, nullptr);
@@ -486,6 +488,7 @@ void FighterServer::CheckDamage(Session* session, ATTACK_TYPE attackType)
 			Damage << (*iter)->ID;
 			unsigned char DamageHP;
 			(*iter)->_Player->NotifyPlayer(nullptr, nullptr, &DamageHP);
+			Damage << DamageHP;
 			SendBroadcast(nullptr, Damage.GetBufferPtr(), HEADER_SIZE + header.BySize);
 
 			// 어택 로그

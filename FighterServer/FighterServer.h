@@ -3,8 +3,7 @@
 #include "Protocol.h"
 #include "MyList.h"
 #include <WS2tcpip.h>
-#include "RingBuffer.h"
-#include "Player.h"
+#include "Session.h"
 
 #pragma comment(lib, "ws2_32.lib")
 #pragma comment(lib, "winmm.lib")
@@ -12,24 +11,6 @@
 #define SERVER_PORT 5000
 #define MAX_CLIENT 64
 #define WAIT 20
-
-struct Session {
-	SOCKET Sock;
-	int ID;
-	Player* _Player;
-	RingBuffer SendBuffer;
-	RingBuffer RecvBuffer;
-	WCHAR IP[16];
-	unsigned short Port;
-
-	Session() {
-		Sock = 0;
-		ID = 0;
-		_Player = new Player;
-		memset(IP, 0, 16);
-		Port = 0;
-	}
-};
 
 class FighterServer {
 public:

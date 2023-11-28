@@ -52,5 +52,8 @@
     <ClInclude Include="Packet.h">
       <Filter>Lib</Filter>
     </ClInclude>
+    <ClInclude Include="Session.h">
+      <Filter>Game</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

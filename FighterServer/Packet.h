@@ -118,7 +118,7 @@ public:
 	// Parameters: 없음.
 	// Return: (int)사용중인 데이타 사이즈.
 	//////////////////////////////////////////////////////////////////////////
-	int		GetDataSize(void) { return WritePos - ReadPos; }
+	int		GetDataSize(void) const { return WritePos - ReadPos; }
 
 
 
@@ -128,7 +128,7 @@ public:
 	// Parameters: 없음.
 	// Return: (char *)버퍼 포인터.
 	//////////////////////////////////////////////////////////////////////////
-	char* GetBufferPtr(void) { return Buffer; }
+	char* GetBufferPtr(void) const { return Buffer; }
 
 	//////////////////////////////////////////////////////////////////////////
 	// 버퍼 Pos 이동. (음수이동은 안됨)

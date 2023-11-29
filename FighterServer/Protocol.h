@@ -1,8 +1,6 @@
 // 패킷 데이터 정의
 #include "Direction.h"
 
-#define HEADER_SIZE 3
-
 enum class PacketType : unsigned char {
 	FIGHTER_CMD_CREATE_MY_CHARACTER = 0,
 	FIGHTER_CMD_CREATE_OTHER_CHARACTER,
@@ -25,12 +23,3 @@ enum class PacketType : unsigned char {
 	FIGHTER_QRY_SYNC = 250,
 	FIGHTER_REP_SYNC,
 };
-
-#pragma pack(push, 1)
-struct PACKET_HEADER {
-	unsigned char ByCode;	// 패킷코드 0x89 고정.
-	unsigned char BySize;	// 패킷 사이즈.
-	unsigned char ByType;	// 패킷타입.
-};
-
-#pragma pack(pop)

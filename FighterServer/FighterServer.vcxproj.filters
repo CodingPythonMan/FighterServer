@@ -12,6 +12,9 @@
     <Filter Include="Game">
       <UniqueIdentifier>{b9f2dfd0-faeb-4a8a-a59f-c4f9c9a9f83c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="RPC">
+      <UniqueIdentifier>{d6be3988-3dc7-4df0-b4fd-2ea81e00234d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FighterServer.cpp">
@@ -31,6 +34,9 @@
     </ClCompile>
     <ClCompile Include="Packet.cpp">
       <Filter>Lib</Filter>
+    </ClCompile>
+    <ClCompile Include="Proxy.cpp">
+      <Filter>RPC</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -54,6 +60,12 @@
     </ClInclude>
     <ClInclude Include="Session.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Message.h">
+      <Filter>RPC</Filter>
+    </ClInclude>
+    <ClInclude Include="Proxy.h">
+      <Filter>RPC</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

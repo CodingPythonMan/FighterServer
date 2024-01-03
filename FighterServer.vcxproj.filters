@@ -4,13 +4,33 @@
     <Filter Include="Main">
       <UniqueIdentifier>{2a6a9a77-f4eb-4f36-8824-097e7f11182c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Network">
+      <UniqueIdentifier>{b458a56e-2033-460e-9c2c-1e11d4b6def1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Log">
+      <UniqueIdentifier>{0561acf6-d743-4690-a815-c621b1833092}</UniqueIdentifier>
+    </Filter>
     <Filter Include="Lib">
-      <UniqueIdentifier>{d1687361-1efe-47c2-84ac-dc5c1cab6239}</UniqueIdentifier>
+      <UniqueIdentifier>{52870a8d-a108-4865-8746-09fca34130c0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
       <Filter>Main</Filter>
     </ClCompile>
+    <ClCompile Include="Network.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Log.cpp">
+      <Filter>Log</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Network.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Log.h">
+      <Filter>Log</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

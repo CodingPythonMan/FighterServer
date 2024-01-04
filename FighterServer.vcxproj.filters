@@ -10,8 +10,8 @@
     <Filter Include="Log">
       <UniqueIdentifier>{0561acf6-d743-4690-a815-c621b1833092}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Lib">
-      <UniqueIdentifier>{52870a8d-a108-4865-8746-09fca34130c0}</UniqueIdentifier>
+    <Filter Include="Game">
+      <UniqueIdentifier>{2f86cc0c-e803-4281-9e35-962bcf695a17}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

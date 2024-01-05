@@ -1,57 +1,27 @@
 #include "Network.h"
-#include <conio.h>
-#include <stdio.h>
+#include "Game.h"
+#include "Log.h"
 
 #pragma comment(lib, "winmm.lib")
 
-bool Shutdown = false;
-
-void ServerControl()
-{
-	// 키보드 컨트롤 잠금, 풀림 변수
-	static bool ControlMode = false;
-
-	// L : 컨트롤 Lock / U : 컨트롤 Unlock / G : 서버 종료
-	if (_kbhit())
-	{
-		WCHAR ControlKey = _getwch();
-
-		// 키보드 제어 허용
-		if (L'u' == ControlKey || L'U' == ControlKey)
-		{
-			ControlMode = true;
-
-			// 관련 키 도움말 출력
-			wprintf(L"Control Mode : Press Q - Quit \n");
-			wprintf(L"Control Mode : Press L - Key Lock \n");
-		}
-
-		// 키보드 제어 잠금
-		if ((L'l' == ControlKey || L'L' == ControlKey) && ControlMode)
-		{
-			wprintf(L"Control Lock! Press U - Control Unlock\n");
-			ControlMode = false;
-		}
-
-		// 키보드 제어 풀림 상태에서 특정 기능
-		if ((L'q' == ControlKey || L'Q' == ControlKey) && ControlMode)
-		{
-			Shutdown = true;
-		}
-
-		// 나중에 추가할 것.
-	}
-}
+#define WAIT 20
 
 int main()
 {
 	// 타이머 해상도 높이기
 	timeBeginPeriod(1);
+	LogFileInit();
 
 	//LoadData();
 	Network network;
 
 	network.StartUp();
+
+	unsigned int tick = 0;
+	unsigned int curTime = timeGetTime();
+	unsigned int ourTime = curTime;
+	unsigned int frameTime = curTime;
+	int Frame = 0;
 	while (Shutdown == false)
 	{
 		network.IOProcess();
@@ -65,6 +35,24 @@ int main()
 
 		// 모니터링 정보를 표시, 저장, 전송하는 경우 사용
 		// Monitor();
+
+		// 프레임 계산 필요
+		Frame++;
+
+		curTime = timeGetTime();
+		if (curTime - frameTime >= 1000)
+		{
+			_LOG(LOG_LEVEL_DEBUG, L"Frame : %d", Frame);
+			Frame = 0;
+			frameTime = curTime;
+		}
+		tick = curTime - ourTime;
+		ourTime += WAIT;
+
+		if (tick <= WAIT)
+		{
+			Sleep(WAIT - tick);
+		}
 	}
 
 	// 서버 종료 대기

@@ -2,6 +2,7 @@
 
 void Network::StartUp()
 {
+
 }
 
 void Network::IOProcess()

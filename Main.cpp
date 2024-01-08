@@ -36,13 +36,13 @@ int main()
 		// 모니터링 정보를 표시, 저장, 전송하는 경우 사용
 		// Monitor();
 
-		// 프레임 계산 필요
 		Frame++;
 
 		curTime = timeGetTime();
 		if (curTime - frameTime >= 1000)
 		{
-			_LOG(LOG_LEVEL_DEBUG, L"Frame : %d", Frame);
+			if(Frame > (1000 / WAIT) && Frame > (1000 / WAIT + 1))
+				_LOG(LOG_LEVEL_DEBUG, L"Frame : %d", Frame);
 			Frame = 0;
 			frameTime = curTime;
 		}

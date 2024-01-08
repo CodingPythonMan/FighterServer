@@ -136,7 +136,8 @@ void Network::AcceptProc()
 	// Session 생성 알려주기
 	wprintf(L"[Client Connect] ID : %d, IP : %s, Port : %d\n", _uniqueID, IP, ntohs(clientAddr.sin_port));
 
-	MakeCharacter();
+	// 캐릭터 생성
+	MakeCharacter(_uniqueID);
 }
 
 void Network::ReadProc(SOCKET sock)

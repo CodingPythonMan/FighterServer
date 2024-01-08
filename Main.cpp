@@ -15,7 +15,11 @@ int main()
 	//LoadData();
 	Network network;
 
-	network.StartUp();
+	if (network.StartUp())
+	{
+		Log(const_cast<WCHAR*>(L"소켓 초기화 오류!\n"), LOG_LEVEL_DEBUG);
+		return 0;
+	}
 
 	unsigned int tick = 0;
 	unsigned int curTime = timeGetTime();

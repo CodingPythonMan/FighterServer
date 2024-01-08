@@ -1,5 +1,4 @@
 #include "Log.h"
-#include <stdio.h>
 #include <time.h>
 
 // extern

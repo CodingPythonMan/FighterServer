@@ -9,5 +9,5 @@ struct Session {
 	unsigned int SessionID;
 	RingBuffer RecvQ;
 	RingBuffer SendQ;
-
+	unsigned int LastRecvTime;
 };

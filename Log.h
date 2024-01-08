@@ -1,5 +1,6 @@
 #pragma once
 #include <windows.h>
+#include <stdio.h>
 
 #define LOG_LEVEL_DEBUG 0
 #define LOG_LEVEL_ERROR 1

@@ -7,6 +7,9 @@
 class Network
 {
 public:
+	Network();
+	virtual ~Network();
+
 	bool StartUp();
 	void IOProcess();
 
@@ -20,4 +23,6 @@ private:
 private:
 	SOCKET _listenSock;
 	std::map<SOCKET, Session*> _sessionMap;
+
+	unsigned int _uniqueID;
 };

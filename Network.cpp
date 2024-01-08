@@ -1,5 +1,16 @@
 #include "Network.h"
 #include "Log.h"
+#include "Game.h"
+
+Network::Network()
+{
+	_listenSock = NULL;
+	_uniqueID = 0;
+}
+
+Network::~Network()
+{
+}
 
 bool Network::StartUp()
 {
@@ -110,7 +121,22 @@ void Network::SelectSocket(SOCKET* socketSet, FD_SET* rsetPtr, FD_SET* wsetPtr)
 
 void Network::AcceptProc()
 {
-	
+	SOCKADDR_IN clientAddr;
+	int addrLen = sizeof(clientAddr);
+	SOCKET clientSock = accept(_listenSock, (SOCKADDR*)&clientAddr, &addrLen);
+	if (clientSock == INVALID_SOCKET)
+		return;
+
+	Session* session = new Session;
+	session->Socket = clientSock;
+	session->SessionID = _uniqueID;
+
+	WCHAR IP[16];
+	InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
+	// Session 생성 알려주기
+	wprintf(L"[Client Connect] ID : %d, IP : %s, Port : %d\n", _uniqueID, IP, ntohs(clientAddr.sin_port));
+
+	MakeCharacter();
 }
 
 void Network::ReadProc(SOCKET sock)

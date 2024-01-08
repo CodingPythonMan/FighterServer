@@ -1,5 +1,4 @@
 #pragma once
+#include "Character.h"
 
-extern bool Shutdown;
-
-void ServerControl();
+void MakeCharacter();

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <WS2tcpip.h>
 #include <windows.h>
 #include "RingBuffer.h"
@@ -10,4 +12,11 @@ struct Session {
 	RingBuffer RecvQ;
 	RingBuffer SendQ;
 	unsigned int LastRecvTime;
+
+	Session()
+	{
+		Socket = NULL;
+		SessionID = 0;
+		LastRecvTime = 0;
+	}
 };

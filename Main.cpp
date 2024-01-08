@@ -1,5 +1,5 @@
 #include "Network.h"
-#include "Game.h"
+#include "Console.h"
 #include "Log.h"
 
 #pragma comment(lib, "winmm.lib")

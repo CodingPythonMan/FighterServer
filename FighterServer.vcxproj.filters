@@ -39,12 +39,6 @@
     <ClCompile Include="Packet.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="Proxy.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
-    <ClCompile Include="Stub.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Network.h">
@@ -76,12 +70,6 @@
     </ClInclude>
     <ClInclude Include="Protocol.h">
       <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Proxy.h">
-      <Filter>Game</Filter>
-    </ClInclude>
-    <ClInclude Include="Stub.h">
-      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -2,7 +2,6 @@
 #include <map>
 #include <list>
 #include "Protocol.h"
-#include "Proxy.h"
 
 // 캐릭터 관리
 std::map<unsigned int, Character*> gCharacterMap;
@@ -19,6 +18,16 @@ void MakeCharacter(unsigned int SessionID)
 	
 }
 
+void SendPacket_Unicast(Session* session, Packet* packet)
+{
+
+}
+
+void SendPacket_Around(Session* session, Packet* packet, bool me, int sectors)
+{
+
+}
+
 bool PacketProc(Session* session, unsigned char PacketType, Packet* packet)
 {
 	switch (PacketType)
@@ -26,8 +35,13 @@ bool PacketProc(Session* session, unsigned char PacketType, Packet* packet)
 	case dfPACKET_CS_MOVE_START:
 		return Proc_MoveStart(session, packet);
 		break;
-
 	}
 
 	return true;
+}
+
+bool Proc_MoveStart(Session* session, Packet* packet)
+{
+
+	return false;
 }

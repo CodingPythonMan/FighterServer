@@ -1,6 +1,9 @@
 #include "Network.h"
 #include "Log.h"
-#include "Game.h"
+#include "Protocol.h"
+#include "GameVariable.h"
+#include "Proxy.h"
+#include "Stub.h"
 
 Network::Network()
 {
@@ -127,9 +130,7 @@ void Network::AcceptProc()
 	if (clientSock == INVALID_SOCKET)
 		return;
 
-	Session* session = new Session;
-	session->Socket = clientSock;
-	session->SessionID = _uniqueID;
+	Session* session = new Session{ clientSock, _uniqueID };
 
 	WCHAR IP[16];
 	InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
@@ -137,7 +138,15 @@ void Network::AcceptProc()
 	wprintf(L"[Client Connect] ID : %d, IP : %s, Port : %d\n", _uniqueID, IP, ntohs(clientAddr.sin_port));
 
 	// 캐릭터 생성
-	MakeCharacter(_uniqueID);
+	Character* character = new Character;
+	gCharacterMap.insert({ _uniqueID, character });
+
+	// 1. 당사자에게 생성됐음을 알려주기
+	Packet CreateMyChar;
+	mpCreateMyCharacter(&CreateMyChar, _uniqueID, character->GetDirect(),
+		character->GetX(), character->GetY(), character->GetHP());
+
+	SendPacket_Unicast(session, &CreateMyChar);
 }
 
 void Network::ReadProc(SOCKET sock)
@@ -147,5 +156,55 @@ void Network::ReadProc(SOCKET sock)
 
 void Network::WriteProc(SOCKET sock)
 {
+	Session* session = _sessionMap[sock];
+	// 해당 에러 소스에 추가 필요.
+	if (session == nullptr)
+		return;
 
+	while (1)
+	{
+		if (session->SendQ.GetUseSize() <= 0)
+			return;
+
+		int retval;
+		int sendAvailableSize = session->SendQ.DirectDequeueSize();
+		char* ptr = session->SendQ.GetFrontBufferPtr();
+		retval = send(session->Socket, ptr, sendAvailableSize, 0);
+		session->SendQ.MoveFront(retval);
+
+		if (retval == SOCKET_ERROR)
+		{
+			retval = GetLastError();
+
+			if (retval == WSAEWOULDBLOCK)
+				return;
+			else if (retval == WSAECONNRESET)
+			{
+				//Disconnect(session);
+				return;
+			}
+		}
+	}
+}
+
+bool Network::PacketProc(Session* session, unsigned char packetType, Packet* packet)
+{
+	switch (packetType)
+	{
+	case dfPACKET_CS_MOVE_START:
+		return Proc_MoveStart(session, packet);
+		break;
+	}
+
+	return true;
+}
+
+void Network::SendPacket_Unicast(Session* session, Packet* packet)
+{
+	if (session->SendQ.GetFreeSize() > packet->GetDataSize())
+		session->SendQ.Enqueue((char*)packet, packet->GetDataSize());
+}
+
+void Network::SendPacket_Around(Session* session, Packet* packet, bool me, int sectors)
+{
 }

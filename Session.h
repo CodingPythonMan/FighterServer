@@ -13,10 +13,10 @@ struct Session {
 	RingBuffer SendQ;
 	unsigned int LastRecvTime;
 
-	Session()
+	Session(SOCKET socket, unsigned int sessionID)
 	{
-		Socket = NULL;
-		SessionID = 0;
+		Socket = socket;
+		SessionID = sessionID;
 		LastRecvTime = 0;
 	}
 };

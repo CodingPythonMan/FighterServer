@@ -11,8 +11,6 @@ struct st_PACKET_HEADER
 
 #define dfPACKET_CODE		0x89
 
-
-
 #define	dfPACKET_SC_CREATE_MY_CHARACTER			0
 //---------------------------------------------------------------
 // 클라이언트 자신의 캐릭터 할당		Server -> Client
@@ -83,9 +81,6 @@ struct st_PACKET_HEADER
 #define dfPACKET_MOVE_DIR_RD					5
 #define dfPACKET_MOVE_DIR_DD					6
 #define dfPACKET_MOVE_DIR_LD					7
-
-#define dfPACKET_DIR_L							0
-#define dfPACKET_DIR_R							1
 
 #define	dfPACKET_SC_MOVE_START					11
 //---------------------------------------------------------------

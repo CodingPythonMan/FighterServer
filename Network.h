@@ -1,5 +1,6 @@
 #pragma once
 #include "Session.h"
+#include "Packet.h"
 #include <map>
 
 #define SERVER_PORT 20000
@@ -19,6 +20,11 @@ private:
 	void AcceptProc();
 	void ReadProc(SOCKET sock);
 	void WriteProc(SOCKET sock);
+
+	bool PacketProc(Session* session, unsigned char packetType, Packet* packet);
+
+	void SendPacket_Unicast(Session* session, Packet* packet);
+	void SendPacket_Around(Session* session, Packet* packet, bool me = false, int sectors = 9);
 
 private:
 	SOCKET _listenSock;

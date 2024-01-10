@@ -13,9 +13,6 @@
     <Filter Include="Game">
       <UniqueIdentifier>{2f86cc0c-e803-4281-9e35-962bcf695a17}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Contents">
-      <UniqueIdentifier>{216c5dd2-59db-4548-9ac0-522aacce31ea}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -33,11 +30,20 @@
     <ClCompile Include="RingBuffer.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="Game.cpp">
+    <ClCompile Include="GameVariable.cpp">
       <Filter>Game</Filter>
     </ClCompile>
     <ClCompile Include="Packet.cpp">
       <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Proxy.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Stub.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
+    <ClCompile Include="Character.cpp">
+      <Filter>Game</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -56,19 +62,22 @@
     <ClInclude Include="RingBuffer.h">
       <Filter>Network</Filter>
     </ClInclude>
-    <ClInclude Include="Direction.h">
-      <Filter>Contents</Filter>
-    </ClInclude>
-    <ClInclude Include="Character.h">
-      <Filter>Contents</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
+    <ClInclude Include="GameVariable.h">
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Packet.h">
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Character.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Proxy.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Stub.h">
       <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>

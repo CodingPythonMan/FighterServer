@@ -123,6 +123,14 @@ Packet& Packet::operator<<(int value)
 	return *this;
 }
 
+Packet& Packet::operator<<(unsigned int value)
+{
+	memcpy(&Buffer[WritePos], &value, sizeof(unsigned int));
+	WritePos += sizeof(unsigned int);
+
+	return *this;
+}
+
 Packet& Packet::operator<<(long value)
 {
 	memcpy(&Buffer[WritePos], &value, sizeof(long));

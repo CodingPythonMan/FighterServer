@@ -15,7 +15,7 @@ public:
 	void IOProcess();
 
 private:
-	void SelectSocket(SOCKET* socketSet, FD_SET* rsetPtr, FD_SET* wsetPtr);
+	void SelectSocket(SOCKET* socketSet,int sockCount, FD_SET* rsetPtr, FD_SET* wsetPtr);
 
 	void AcceptProc();
 	void ReadProc(SOCKET sock);
@@ -24,7 +24,7 @@ private:
 	bool PacketProc(Session* session, unsigned char packetType, Packet* packet);
 
 	void SendPacket_Unicast(Session* session, Packet* packet);
-	void SendPacket_Around(Session* session, Packet* packet, bool me = false, int sectors = 9);
+	void SendPacket_Around(Session* session, Packet* packet, bool me = false);
 
 private:
 	SOCKET _listenSock;

@@ -21,7 +21,6 @@
   <ItemGroup>
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Console.cpp" />
-    <ClCompile Include="GameVariable.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Network.cpp" />
@@ -33,7 +32,6 @@
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="Console.h" />
-    <ClInclude Include="GameVariable.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Packet.h" />

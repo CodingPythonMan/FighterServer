@@ -30,9 +30,6 @@
     <ClCompile Include="RingBuffer.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="GameVariable.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="Packet.cpp">
       <Filter>Network</Filter>
     </ClCompile>
@@ -61,9 +58,6 @@
     </ClInclude>
     <ClInclude Include="RingBuffer.h">
       <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="GameVariable.h">
-      <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Packet.h">
       <Filter>Network</Filter>

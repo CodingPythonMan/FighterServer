@@ -1,9 +1,9 @@
 #include "Network.h"
 #include "Log.h"
 #include "Protocol.h"
-#include "GameVariable.h"
 #include "Proxy.h"
 #include "Stub.h"
+#include "Character.h"
 
 Network::Network()
 {
@@ -87,15 +87,17 @@ void Network::IOProcess()
 		// Select 최대치 도달. 만들어진 테이블 정보로 select 호출 후 정리
 		if (Count >= FD_SETSIZE)
 		{
-			SelectSocket(SockSet, &rset, &wset);
+			SelectSocket(SockSet, Count, &rset, &wset);
 			FD_ZERO(&rset);
 			FD_ZERO(&wset);
 			Count = 0;
 		}
 	}
+
+	SelectSocket(SockSet, Count, &rset, &wset);
 }
 
-void Network::SelectSocket(SOCKET* socketSet, FD_SET* rsetPtr, FD_SET* wsetPtr)
+void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD_SET* wsetPtr)
 {
 	// 프레임 서버이므로 timeval 설정
 	timeval time{ 0, 0 };
@@ -107,7 +109,7 @@ void Network::SelectSocket(SOCKET* socketSet, FD_SET* rsetPtr, FD_SET* wsetPtr)
 		return;
 
 	// 리슨소켓 검사
-	for (int i = 0; i < retval; i++)
+	for (int i = 0; i < sockCount; i++)
 	{
 		if (FD_ISSET(socketSet[i], rsetPtr))
 		{
@@ -131,6 +133,7 @@ void Network::AcceptProc()
 		return;
 
 	Session* session = new Session{ clientSock, _uniqueID };
+	_sessionMap.insert({clientSock, session});
 
 	WCHAR IP[16];
 	InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
@@ -147,6 +150,13 @@ void Network::AcceptProc()
 		character->GetX(), character->GetY(), character->GetHP());
 
 	SendPacket_Unicast(session, &CreateMyChar);
+
+	// 2. 다른 사람에게 알려주기
+	Packet CreateOtherChar;
+	mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->GetDirect(),
+		character->GetX(), character->GetY(), character->GetHP());
+
+	SendPacket_Around(session, &CreateOtherChar);
 }
 
 void Network::ReadProc(SOCKET sock)
@@ -202,9 +212,12 @@ bool Network::PacketProc(Session* session, unsigned char packetType, Packet* pac
 void Network::SendPacket_Unicast(Session* session, Packet* packet)
 {
 	if (session->SendQ.GetFreeSize() > packet->GetDataSize())
-		session->SendQ.Enqueue((char*)packet, packet->GetDataSize());
+		session->SendQ.Enqueue((char*)packet->GetBufferPtr(), packet->GetDataSize());
 }
 
-void Network::SendPacket_Around(Session* session, Packet* packet, bool me, int sectors)
+void Network::SendPacket_Around(Session* session, Packet* packet, bool me)
 {
+	Character* character = gCharacterMap[session->SessionID];
+	SectorPos* pos = character->GetSectorPtr();
+	//gSector[pos->Y][pos->X]
 }

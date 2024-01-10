@@ -1,7 +1,14 @@
 #include "Character.h"
-#include "GameVariable.h"
 
-Character::Character() : Sector()
+// 캐릭터 관리
+std::map<unsigned int, Character*> gCharacterMap;
+
+// 월드맵 캐릭터 섹터
+std::list<Character*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
+
+int Temp = 0;
+
+Character::Character()
 {
 	SessionPtr = nullptr;
 	SessionID = 0;
@@ -10,7 +17,28 @@ Character::Character() : Sector()
 	MoveDirect = 0;
 	X = rand() % dfRANGE_MOVE_RIGHT;
 	Y = rand() % dfRANGE_MOVE_BOTTOM;
+
+	// Test 끝나면 지울 코드
+	if (Temp == 0)
+	{
+		X = 30;
+		Y = 30;
+		Temp++;
+	}
+
+	if (Temp == 1)
+	{
+		X = 60;
+		Y = 60;
+		Temp++;
+	}
+
+	Sector.X = X / dfSECTOR_MAX_X;
+	Sector.Y = Y / dfSECTOR_MAX_Y;
 	HP = DEFAULT_HP;
+
+	// 캐릭터 추가
+	gSector[Sector.Y][Sector.X].push_back(this);
 }
 
 Character::~Character()
@@ -35,4 +63,9 @@ short Character::GetY()
 char Character::GetHP()
 {
 	return HP;
+}
+
+SectorPos* Character::GetSectorPtr()
+{
+	return &Sector;
 }

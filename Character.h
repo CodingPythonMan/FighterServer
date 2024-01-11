@@ -16,14 +16,15 @@ struct SectorPos {
 class Character
 {
 public:
-	Character();
+	Character(Session* sessionPtr);
 	virtual ~Character();
 
+	Session* GetSessionPtr();
 	unsigned char GetDirect();
 	short GetX();
 	short GetY();
+	SectorPos GetSectorPos();
 	char GetHP();
-	SectorPos* GetSectorPtr();
 
 private:
 	Session* SessionPtr;
@@ -36,6 +37,9 @@ private:
 	SectorPos Sector;
 	char HP;
 };
+
+Character* FindCharacter(unsigned int SessionID);
+SectorPos FindSectorPos(unsigned int SessionID);
 
 extern std::map<unsigned int, Character*> gCharacterMap;
 

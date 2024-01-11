@@ -8,9 +8,9 @@ std::list<Character*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
 
 int Temp = 0;
 
-Character::Character()
+Character::Character(Session* sessionPtr)
 {
-	SessionPtr = nullptr;
+	SessionPtr = sessionPtr;
 	SessionID = 0;
 	Action = DONT_MOVE;
 	Direct = dfPACKET_DIR_L;
@@ -25,16 +25,15 @@ Character::Character()
 		Y = 30;
 		Temp++;
 	}
-
-	if (Temp == 1)
+	else if (Temp == 1)
 	{
 		X = 60;
 		Y = 60;
 		Temp++;
 	}
 
-	Sector.X = X / dfSECTOR_MAX_X;
-	Sector.Y = Y / dfSECTOR_MAX_Y;
+	Sector.X = X / dfSECTOR_X;
+	Sector.Y = Y / dfSECTOR_Y;
 	HP = DEFAULT_HP;
 
 	// 캐릭터 추가
@@ -43,6 +42,11 @@ Character::Character()
 
 Character::~Character()
 {
+}
+
+Session* Character::GetSessionPtr()
+{
+	return SessionPtr;
 }
 
 unsigned char Character::GetDirect()
@@ -60,12 +64,23 @@ short Character::GetY()
 	return Y;
 }
 
+SectorPos Character::GetSectorPos()
+{
+	return Sector;
+}
+
 char Character::GetHP()
 {
 	return HP;
 }
 
-SectorPos* Character::GetSectorPtr()
+Character* FindCharacter(unsigned int SessionID)
 {
-	return &Sector;
+	return gCharacterMap[SessionID];
+}
+
+SectorPos FindSectorPos(unsigned int SessionID)
+{
+	Character* character = FindCharacter(SessionID);
+	return character->GetSectorPos();
 }

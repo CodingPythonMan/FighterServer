@@ -274,6 +274,9 @@ struct st_PACKET_HEADER
 #define dfSECTOR_MAX_X 256
 #define dfSECTOR_MAX_Y 256
 
+#define dfSECTOR_X (dfRANGE_MOVE_RIGHT / dfSECTOR_MAX_X)
+#define dfSECTOR_Y (dfRANGE_MOVE_BOTTOM / dfSECTOR_MAX_Y)
+
 //-----------------------------------------------------------------
 // 30초 이상이 되도록 아무런 메시지 수신도 없는경우 접속 끊음.
 //-----------------------------------------------------------------

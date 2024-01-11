@@ -16,17 +16,9 @@ struct SectorPos {
 class Character
 {
 public:
-	Character(Session* sessionPtr);
+	Character(Session* sessionPtr, unsigned int SessionID);
 	virtual ~Character();
 
-	Session* GetSessionPtr();
-	unsigned char GetDirect();
-	short GetX();
-	short GetY();
-	SectorPos GetSectorPos();
-	char GetHP();
-
-private:
 	Session* SessionPtr;
 	unsigned int SessionID;
 	unsigned int Action;

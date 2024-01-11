@@ -8,10 +8,10 @@ std::list<Character*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
 
 int Temp = 0;
 
-Character::Character(Session* sessionPtr)
+Character::Character(Session* sessionPtr, unsigned int sessionID)
 {
 	SessionPtr = sessionPtr;
-	SessionID = 0;
+	SessionID = sessionID;
 	Action = DONT_MOVE;
 	Direct = dfPACKET_DIR_L;
 	MoveDirect = 0;
@@ -38,40 +38,13 @@ Character::Character(Session* sessionPtr)
 
 	// 캐릭터 추가
 	gSector[Sector.Y][Sector.X].push_back(this);
+	gCharacterMap.insert({ SessionID, this});
 }
 
 Character::~Character()
 {
-}
-
-Session* Character::GetSessionPtr()
-{
-	return SessionPtr;
-}
-
-unsigned char Character::GetDirect()
-{
-	return Direct;
-}
-
-short Character::GetX()
-{
-	return X;
-}
-
-short Character::GetY()
-{
-	return Y;
-}
-
-SectorPos Character::GetSectorPos()
-{
-	return Sector;
-}
-
-char Character::GetHP()
-{
-	return HP;
+	gSector[Sector.Y][Sector.X].remove(this);
+	gCharacterMap.erase(SessionID);
 }
 
 Character* FindCharacter(unsigned int SessionID)
@@ -82,5 +55,5 @@ Character* FindCharacter(unsigned int SessionID)
 SectorPos FindSectorPos(unsigned int SessionID)
 {
 	Character* character = FindCharacter(SessionID);
-	return character->GetSectorPos();
+	return character->Sector;
 }

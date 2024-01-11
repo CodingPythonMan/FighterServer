@@ -21,23 +21,27 @@
   <ItemGroup>
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Game.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Proxy.cpp" />
     <ClCompile Include="RingBuffer.cpp" />
+    <ClCompile Include="Send.cpp" />
     <ClCompile Include="Stub.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="Console.h" />
+    <ClInclude Include="Game.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="Proxy.h" />
     <ClInclude Include="RingBuffer.h" />
+    <ClInclude Include="Send.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="Stub.h" />
   </ItemGroup>

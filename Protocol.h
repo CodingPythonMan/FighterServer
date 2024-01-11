@@ -1,13 +1,14 @@
 #ifndef __PROTOCOL__
 #define __PROTOCOL__
 
+#pragma pack(push, 1)
 struct st_PACKET_HEADER
 {
 	unsigned char	byCode;			// 패킷코드 0x89 고정.
 	unsigned char	bySize;			// 패킷 사이즈.
 	unsigned char	byType;			// 패킷타입.
 };
-
+#pragma pack(pop)
 
 #define dfPACKET_CODE		0x89
 

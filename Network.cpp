@@ -3,10 +3,7 @@
 #include "Protocol.h"
 #include "Proxy.h"
 #include "Stub.h"
-#include "Character.h"
-
-int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
-int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+#include "Send.h"
 
 Network::Network()
 {
@@ -98,6 +95,9 @@ void Network::IOProcess()
 	}
 
 	SelectSocket(SockSet, Count, &rset, &wset);
+
+	// Select 한번 끝난 후 삭제.
+	DeleteSessions();
 }
 
 void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD_SET* wsetPtr)
@@ -114,16 +114,22 @@ void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD
 	// 리슨소켓 검사
 	for (int i = 0; i < sockCount; i++)
 	{
-		if (FD_ISSET(socketSet[i], rsetPtr))
-		{
-			if (socketSet[i] == _listenSock)
-				AcceptProc();
-			else
-				ReadProc(socketSet[i]);
-		}
-
+		bool disconnectFlag = false;
 		if (FD_ISSET(socketSet[i], wsetPtr))
-			WriteProc(socketSet[i]);
+		{
+			disconnectFlag = WriteProc(socketSet[i]);
+		}
+		
+		if (disconnectFlag == false)
+		{
+			if (FD_ISSET(socketSet[i], rsetPtr))
+			{
+				if (socketSet[i] == _listenSock)
+					AcceptProc();
+				else
+					ReadProc(socketSet[i]);
+			}
+		}
 	}
 }
 
@@ -135,8 +141,8 @@ void Network::AcceptProc()
 	if (clientSock == INVALID_SOCKET)
 		return;
 
-	Session* session = new Session{ clientSock, _uniqueID };
-	_sessionMap.insert({clientSock, session});
+	// 세션 생성
+	Session* session = CreateSession(clientSock);
 
 	WCHAR IP[16];
 	InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
@@ -144,20 +150,19 @@ void Network::AcceptProc()
 	wprintf(L"[Client Connect] ID : %d, IP : %s, Port : %d\n", _uniqueID, IP, ntohs(clientAddr.sin_port));
 
 	// 캐릭터 생성
-	Character* character = new Character(session);
-	gCharacterMap.insert({ _uniqueID, character });
+	Character* character = new Character(session, _uniqueID);
 
 	// 1. 당사자에게 생성됐음을 알려주기
 	Packet CreateMyChar;
-	mpCreateMyCharacter(&CreateMyChar, _uniqueID, character->GetDirect(),
-		character->GetX(), character->GetY(), character->GetHP());
+	mpCreateMyCharacter(&CreateMyChar, _uniqueID, character->Direct,
+		character->X, character->Y, character->HP);
 
 	SendPacket_Unicast(session, &CreateMyChar);
 
 	// 2. 다른 사람에게 알려주기
 	Packet CreateOtherChar;
-	mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->GetDirect(),
-		character->GetX(), character->GetY(), character->GetHP());
+	mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+		character->X, character->Y, character->HP);
 
 	SendPacket_Around(session, &CreateOtherChar);
 
@@ -168,12 +173,12 @@ void Network::AcceptProc()
 	for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 	{
 		character = *iter;
-		if (character->GetSessionPtr() == session)
+		if (character->SessionPtr == session)
 			continue;
 		
-		mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->GetDirect(),
-			character->GetX(), character->GetY(), character->GetHP());
-		SendPacket_Unicast((*iter)->GetSessionPtr(), &CreateOtherChar);
+		mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+			character->X, character->Y, character->HP);
+		SendPacket_Unicast((*iter)->SessionPtr, &CreateOtherChar);
 	}
 
 	// 8방향에 대해서 Sector Send
@@ -189,29 +194,80 @@ void Network::AcceptProc()
 
 		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 		{
-			mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->GetDirect(),
-				character->GetX(), character->GetY(), character->GetHP());
-			SendPacket_Unicast((*iter)->GetSessionPtr(), &CreateOtherChar);
+			mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+				character->X, character->Y, character->HP);
+			SendPacket_Unicast((*iter)->SessionPtr, &CreateOtherChar);
 		}
 	}
 }
 
 void Network::ReadProc(SOCKET sock)
 {
-
-}
-
-void Network::WriteProc(SOCKET sock)
-{
 	Session* session = FindSession(sock);
-	// 해당 에러 소스에 추가 필요.
 	if (session == nullptr)
 		return;
 
+	int retval;
+	int recvAvailableSize = session->RecvQ.DirectEnqueueSize();
+	char* ptr = session->RecvQ.GetRearBufferPtr();
+	retval = recv(session->Socket, ptr, recvAvailableSize, 0);
+	session->RecvQ.MoveRear(retval);
+
+	if (retval == SOCKET_ERROR)
+	{
+		retval = GetLastError();
+
+		if (retval == WSAEWOULDBLOCK)
+			return;
+		else if (retval == WSAECONNRESET)
+		{
+			DisconnectSession(session);
+			return;
+		}
+	}
+	else if (retval == 0)
+	{
+		DisconnectSession(session);
+	}
+
+	while (1)
+	{
+		// Peek 전에 오류 나버린다.
+		if (session->RecvQ.GetUseSize() <= sizeof(st_PACKET_HEADER))
+			break;
+
+		st_PACKET_HEADER header;
+		session->RecvQ.Peek((char*)&header, sizeof(st_PACKET_HEADER));
+		if (session->RecvQ.GetUseSize() < sizeof(st_PACKET_HEADER) + header.bySize)
+			break;
+
+		// 프로토콜 코드가 맞지 않다면 내보낸다.
+		if (header.byCode != 0x89)
+			break;
+
+		// 마샬링
+		Packet packet;
+		retval = session->RecvQ.Dequeue(packet.GetBufferPtr(), sizeof(st_PACKET_HEADER) + header.bySize);
+		unsigned char type = ((st_PACKET_HEADER*)packet.GetBufferPtr())->byType;
+
+		if (false == PacketProc(session, type, &packet))
+			break;
+	}
+}
+
+bool Network::WriteProc(SOCKET sock)
+{
+	Session* session = FindSession(sock);
+	if (session == nullptr)
+	{
+		_LOG(LOG_LEVEL_ERROR, L"%s", L"WriteProc => Cannot Find Session!");
+		return true;
+	}
+		
 	while (1)
 	{
 		if (session->SendQ.GetUseSize() <= 0)
-			return;
+			break;
 
 		int retval;
 		int sendAvailableSize = session->SendQ.DirectDequeueSize();
@@ -224,14 +280,16 @@ void Network::WriteProc(SOCKET sock)
 			retval = GetLastError();
 
 			if (retval == WSAEWOULDBLOCK)
-				return;
+				break;
 			else if (retval == WSAECONNRESET)
 			{
-				//Disconnect(session);
-				return;
+				DisconnectSession(session);
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
 bool Network::PacketProc(Session* session, unsigned char packetType, Packet* packet)
@@ -246,53 +304,37 @@ bool Network::PacketProc(Session* session, unsigned char packetType, Packet* pac
 	return true;
 }
 
-void Network::SendPacket_SectorOne(int sectorX, int sectorY, Packet* packet, Session* exceptSession)
-{
-}
-
-void Network::SendPacket_Unicast(Session* session, Packet* packet)
-{
-	if (session->SendQ.GetFreeSize() > packet->GetDataSize())
-		session->SendQ.Enqueue((char*)packet->GetBufferPtr(), packet->GetDataSize());
-}
-
-void Network::SendPacket_Around(Session* session, Packet* packet, bool me)
-{
-	SectorPos pos = FindSectorPos(session->SessionID);
-
-	std::list<Character*> characterList = gSector[pos.Y][pos.X];
-	for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
-	{
-		if (me == false && (*iter)->GetSessionPtr() == session)
-			continue;
-
-		SendPacket_Unicast((*iter)->GetSessionPtr(), packet);
-	}
-
-	// 8방향에 대해서 Sector Send
-	for (int i = 0; i < 8; i++)
-	{
-		int dX = pos.X + dx[i];
-		int dY = pos.Y + dy[i];
-
-		if (dX < 0 || dX >= dfSECTOR_MAX_X || dY < 0 || dY >= dfSECTOR_MAX_Y)
-			continue;
-
-		characterList = gSector[dY][dX];
-
-		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
-		{
-			SendPacket_Unicast((*iter)->GetSessionPtr(), packet);
-		}
-	}
-}
-
-void Network::SendPacket_Broadcast(Session* session, Packet* packet)
-{
-	// 에코 메세지 쏠 떄, 필요할 수 있음.
-}
-
 Session* Network::FindSession(SOCKET socket)
 {
 	return _sessionMap[socket];
+}
+
+Session* Network::CreateSession(SOCKET socket)
+{
+	Session* session = new Session{ socket, _uniqueID };
+	_sessionMap.insert({ socket, session });
+
+	return session;
+}
+
+void Network::DisconnectSession(Session* session)
+{
+	Packet Delete;
+	mpDeleteCharacter(&Delete, session->SessionID);
+	SendPacket_Around(session, &Delete);
+
+	_deleteList.push_back(session);
+}
+
+void Network::DeleteSessions()
+{
+	for (auto iter = _deleteList.begin(); iter != _deleteList.end(); ++iter)
+	{
+		_sessionMap.erase((*iter)->Socket);
+		delete FindCharacter((*iter)->SessionID);
+		closesocket((*iter)->Socket);
+		delete (*iter);
+	}
+
+	_deleteList.clear();
 }

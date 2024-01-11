@@ -1,7 +1,7 @@
 #ifndef  __PACKET__
 #define  __PACKET__
 
-#define MAX_PACKET_SIZE 1400
+#define MAX_PACKET_SIZE 100
 
 class Packet
 {

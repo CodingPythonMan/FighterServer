@@ -42,6 +42,12 @@
     <ClCompile Include="Character.cpp">
       <Filter>Game</Filter>
     </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Send.cpp">
+      <Filter>Network</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Network.h">
@@ -72,6 +78,12 @@
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="Stub.h">
+      <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
+      <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Send.h">
       <Filter>Network</Filter>
     </ClInclude>
   </ItemGroup>

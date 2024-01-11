@@ -1,7 +1,7 @@
 #pragma once
 #include "Session.h"
 #include "Packet.h"
-#include <map>
+#include "Character.h"
 
 #define SERVER_PORT 20000
 
@@ -19,20 +19,20 @@ private:
 
 	void AcceptProc();
 	void ReadProc(SOCKET sock);
-	void WriteProc(SOCKET sock);
+	bool WriteProc(SOCKET sock);
 
 	bool PacketProc(Session* session, unsigned char packetType, Packet* packet);
 
-	void SendPacket_SectorOne(int sectorX, int sectorY, Packet* packet, Session* exceptSession);
-	void SendPacket_Unicast(Session* session, Packet* packet);
-	void SendPacket_Around(Session* session, Packet* packet, bool me = false);
-	void SendPacket_Broadcast(Session* session, Packet* packet);
-
 	Session* FindSession(SOCKET socket);
+	Session* CreateSession(SOCKET socket);
+	void DisconnectSession(Session* session);
+	void DeleteSessions();
 
 private:
 	SOCKET _listenSock;
 	std::map<SOCKET, Session*> _sessionMap;
+
+	std::list<Session*> _deleteList;
 
 	unsigned int _uniqueID;
 };

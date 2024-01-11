@@ -1,6 +1,7 @@
 #include "Network.h"
 #include "Console.h"
 #include "Log.h"
+#include "Game.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -32,7 +33,7 @@ int main()
 
 		// 업데이트는 게임의 로직
 		// 로직 처리
-		//Update();
+		Update();
 
 		// 키보드 입력을 통해서 서버를 제어할 경우 사용
 		ServerControl();

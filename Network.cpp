@@ -176,7 +176,7 @@ void Network::AcceptProc()
 		if (character->SessionPtr == session)
 			continue;
 		
-		mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+		mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
 			character->X, character->Y, character->HP);
 		SendPacket_Unicast(session, &CreateOtherChar);
 	}
@@ -195,7 +195,7 @@ void Network::AcceptProc()
 		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 		{
 			character = *iter;
-			mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+			mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
 				character->X, character->Y, character->HP);
 			SendPacket_Unicast(session, &CreateOtherChar);
 		}

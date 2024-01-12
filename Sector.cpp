@@ -1,6 +1,7 @@
 #include "Sector.h"
 #include "Send.h"
 #include "Proxy.h"
+#include "Log.h"
 
 bool SectorUpdateCharacter(Character* character)
 {
@@ -71,10 +72,6 @@ void SectorUpdatePacket(Character* character)
 	Packet Sub;
 	mpDeleteCharacter(&Sub, character->SessionID);
 
-	bool moveStart = false;
-	if (character->Action < dfPACKET_MOVE_STOP)
-		moveStart = true;
-
 	switch (character->Action)
 	{
 	case dfPACKET_MOVE_DIR_LL:
@@ -82,15 +79,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X - 1, sector.Y, &Add, nullptr);
 		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
-		}
 
 		// 2. 없어지는 섹터에 대한 캐릭터 삭제
 		SendPacket_SectorOne(sector.X + 2, sector.Y - 1, &Sub, nullptr);
@@ -112,17 +100,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y - 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X + 2, sector.Y + 2, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y + 2, &Sub, nullptr);
@@ -146,15 +123,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y - 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X - 1, sector.Y + 2, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y + 2, &Sub, nullptr);
@@ -174,17 +142,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y - 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X - 2, sector.Y, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X - 2, sector.Y + 1, &Sub, nullptr);
@@ -208,15 +165,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y, &Add, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X - 2, sector.Y - 1, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X - 2, sector.Y, &Sub, nullptr);
@@ -236,17 +184,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X - 2, sector.Y, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X - 2, sector.Y - 1, &Sub, nullptr);
@@ -270,15 +207,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X - 1, sector.Y - 2, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y - 2, &Sub, nullptr);
@@ -298,17 +226,6 @@ void SectorUpdatePacket(Character* character)
 		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X, sector.Y + 1, &Add, nullptr);
 		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &Add, nullptr);
-		if (moveStart == true)
-		{
-			Packet MoveStart;
-			mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
-				character->X, character->Y);
-			SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X, sector.Y + 1, &MoveStart, nullptr);
-			SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
-		}
 
 		SendPacket_SectorOne(sector.X + 2, sector.Y, &Sub, nullptr);
 		SendPacket_SectorOne(sector.X + 2, sector.Y - 1, &Sub, nullptr);
@@ -333,9 +250,15 @@ void SectorUpdatePacket(Character* character)
 
 void ReceivePacket_CreateSectorOne(int sectorX, int sectorY, Packet* packet, Session* session)
 {
+	if (sectorX < 0 || sectorX >= dfSECTOR_MAX_X || sectorY < 0 || sectorY >= dfSECTOR_MAX_Y)
+		return;
+
 	std::list<Character*> characterList = gSector[sectorY][sectorX];
 	for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 	{
+		_LOG(LOG_LEVEL_DEBUG, L"CreateSectorOne => Target : %d, Create SessionID: %d",
+			session->SessionID, (*iter)->SessionID);
+
 		Character* character = *iter;
 		mpCreateOtherCharacter(packet, character->SessionID, character->Direct,
 			character->X, character->Y, character->HP);
@@ -354,9 +277,14 @@ void ReceivePacket_CreateSectorOne(int sectorX, int sectorY, Packet* packet, Ses
 
 void ReceivePacket_DeleteSectorOne(int sectorX, int sectorY, Packet* packet, Session* session)
 {
+	if (sectorX < 0 || sectorX >= dfSECTOR_MAX_X || sectorY < 0 || sectorY >= dfSECTOR_MAX_Y)
+		return;
+
 	std::list<Character*> characterList = gSector[sectorY][sectorX];
 	for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 	{
+		_LOG(LOG_LEVEL_DEBUG, L"DeleteSectorOne => Target : %d, Delete SessionID: %d", 
+			session->SessionID, (*iter)->SessionID);
 		mpDeleteCharacter(packet, (*iter)->SessionID);
 		SendPacket_Unicast(session, packet);
 	}

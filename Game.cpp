@@ -1,6 +1,9 @@
 #include "Game.h"
 #include "Sector.h"
 #include "Log.h"
+#include "Packet.h"
+#include "Proxy.h"
+#include "Send.h"
 
 void Update()
 {
@@ -63,6 +66,70 @@ void Update()
 		if (SectorUpdateCharacter(character))
 		{
 			SectorUpdatePacket(character);
+			SendMoveStartNewSection(character);
 		}
+	}
+}
+
+void SendMoveStartNewSection(Character* character)
+{
+	SectorPos sector = character->Sector;
+
+	Packet MoveStart;
+	mpMoveStart(&MoveStart, character->SessionID, character->MoveDirect,
+		character->X, character->Y);
+	switch (character->Action)
+	{
+	case dfPACKET_MOVE_DIR_LL:
+		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_LU:
+		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_UU:
+		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_RU:
+		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_RR:
+		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_RD:
+		SendPacket_SectorOne(sector.X + 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_DD:
+		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
+		break;
+	case dfPACKET_MOVE_DIR_LD:
+		SendPacket_SectorOne(sector.X - 1, sector.Y - 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X - 1, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X, sector.Y + 1, &MoveStart, nullptr);
+		SendPacket_SectorOne(sector.X + 1, sector.Y + 1, &MoveStart, nullptr);
+		break;
+	default:
+		_LOG(LOG_LEVEL_ERROR, L"GameLogic => Direction Error!");
+		return;
 	}
 }

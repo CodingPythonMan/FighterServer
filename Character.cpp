@@ -21,14 +21,26 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 	// Test 끝나면 지울 코드
 	if (Temp == 0)
 	{
-		X = 30;
-		Y = 30;
+		X = 205;
+		Y = 205;
 		Temp++;
 	}
 	else if (Temp == 1)
 	{
-		X = 60;
-		Y = 60;
+		X = 255;
+		Y = 255;
+		Temp++;
+	}
+	else if (Temp == 2)
+	{
+		X = 300;
+		Y = 300;
+		Temp++;
+	}
+	else if (Temp == 3)
+	{
+		X = 280;
+		Y = 280;
 		Temp++;
 	}
 

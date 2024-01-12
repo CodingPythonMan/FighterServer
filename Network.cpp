@@ -178,7 +178,7 @@ void Network::AcceptProc()
 		
 		mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
 			character->X, character->Y, character->HP);
-		SendPacket_Unicast((*iter)->SessionPtr, &CreateOtherChar);
+		SendPacket_Unicast(session, &CreateOtherChar);
 	}
 
 	// 8방향에 대해서 Sector Send
@@ -194,9 +194,10 @@ void Network::AcceptProc()
 
 		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 		{
+			character = *iter;
 			mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
 				character->X, character->Y, character->HP);
-			SendPacket_Unicast((*iter)->SessionPtr, &CreateOtherChar);
+			SendPacket_Unicast(session, &CreateOtherChar);
 		}
 	}
 

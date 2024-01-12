@@ -274,8 +274,8 @@ struct st_PACKET_HEADER
 
 
 // Grid 를 나눌 수
-#define dfSECTOR_MAX_X 256
-#define dfSECTOR_MAX_Y 256
+#define dfSECTOR_MAX_X 128
+#define dfSECTOR_MAX_Y 128
 
 #define dfSECTOR_X (dfRANGE_MOVE_RIGHT / dfSECTOR_MAX_X)
 #define dfSECTOR_Y (dfRANGE_MOVE_BOTTOM / dfSECTOR_MAX_Y)

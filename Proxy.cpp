@@ -56,6 +56,20 @@ void mpMoveStart(Packet* packet, unsigned int SessionID, unsigned char Direct, s
 	*packet << Y;
 }
 
+void mpMoveStop(Packet* packet, unsigned int SessionID, unsigned char Direct, short X, short Y)
+{
+	st_PACKET_HEADER header;
+	header.byCode = dfPACKET_CODE;
+	header.bySize = 9;
+	header.byType = dfPACKET_SC_MOVE_STOP;
+	packet->Clear();
+	packet->PutData((char*)&header, sizeof(st_PACKET_HEADER));
+	*packet << SessionID;
+	*packet << Direct;
+	*packet << X;
+	*packet << Y;
+}
+
 void mpSync(Packet* packet, unsigned int SessionID, short X, short Y)
 {
 	st_PACKET_HEADER header;

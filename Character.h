@@ -4,7 +4,6 @@
 #include <map>
 #include "Protocol.h"
 
-#define DONT_MOVE 0
 #define IS_MOVE 1
 #define DEFAULT_HP 100
 

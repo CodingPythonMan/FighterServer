@@ -6,6 +6,17 @@ int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
 
 void SendPacket_SectorOne(int sectorX, int sectorY, Packet* packet, Session* exceptSession)
 {
+	if (sectorX < 0 || sectorX >= dfSECTOR_MAX_X || sectorY < 0 || sectorY >= dfSECTOR_MAX_Y)
+		return;
+
+	std::list<Character*> characterList = gSector[sectorY][sectorX];
+	for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+	{
+		if ((*iter)->SessionPtr == exceptSession)
+			continue;
+
+		SendPacket_Unicast((*iter)->SessionPtr, packet);
+	}
 }
 
 void SendPacket_Unicast(Session* session, Packet* packet)

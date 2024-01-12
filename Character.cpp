@@ -12,8 +12,8 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 {
 	SessionPtr = sessionPtr;
 	SessionID = sessionID;
-	Action = DONT_MOVE;
-	Direct = dfPACKET_DIR_L;
+	Action = dfPACKET_MOVE_STOP;
+	Direct = dfPACKET_MOVE_DIR_LL;
 	MoveDirect = 0;
 	X = rand() % dfRANGE_MOVE_RIGHT;
 	Y = rand() % dfRANGE_MOVE_BOTTOM;

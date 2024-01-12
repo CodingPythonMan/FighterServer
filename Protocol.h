@@ -83,6 +83,8 @@ struct st_PACKET_HEADER
 #define dfPACKET_MOVE_DIR_DD					6
 #define dfPACKET_MOVE_DIR_LD					7
 
+#define dfPACKET_MOVE_STOP						8
+
 #define	dfPACKET_SC_MOVE_START					11
 //---------------------------------------------------------------
 // 캐릭터 이동시작 패킷						Server -> Client
@@ -283,10 +285,6 @@ struct st_PACKET_HEADER
 //-----------------------------------------------------------------
 #define dfNETWORK_PACKET_RECV_TIMEOUT	30000
 
-// 방향
-#define dfPACKET_DIR_L							0
-#define dfPACKET_DIR_R							1
-
 //-----------------------------------------------------------------
 // 화면 이동 범위.
 //-----------------------------------------------------------------
@@ -317,8 +315,8 @@ struct st_PACKET_HEADER
 //-----------------------------------------------------------------
 // 캐릭터 이동 속도   // 25fps 기준 이동속도
 //-----------------------------------------------------------------
-#define dfSPEED_PLAYER_X	6	// 3   50fps
-#define dfSPEED_PLAYER_Y	4	// 2   50fps
+#define dfSPEED_PLAYER_X	3	// 3   50fps
+#define dfSPEED_PLAYER_Y	2	// 2   50fps
 
 
 //-----------------------------------------------------------------

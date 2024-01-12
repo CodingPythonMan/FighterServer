@@ -48,6 +48,9 @@
     <ClCompile Include="Send.cpp">
       <Filter>Network</Filter>
     </ClCompile>
+    <ClCompile Include="Sector.cpp">
+      <Filter>Game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Network.h">
@@ -85,6 +88,9 @@
     </ClInclude>
     <ClInclude Include="Send.h">
       <Filter>Network</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

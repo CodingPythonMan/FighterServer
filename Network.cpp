@@ -199,6 +199,8 @@ void Network::AcceptProc()
 			SendPacket_Unicast((*iter)->SessionPtr, &CreateOtherChar);
 		}
 	}
+
+	_uniqueID++;
 }
 
 void Network::ReadProc(SOCKET sock)
@@ -248,9 +250,9 @@ void Network::ReadProc(SOCKET sock)
 		// ¸¶¼£¸µ
 		Packet packet;
 		retval = session->RecvQ.Dequeue(packet.GetBufferPtr(), sizeof(st_PACKET_HEADER) + header.bySize);
-		unsigned char type = ((st_PACKET_HEADER*)packet.GetBufferPtr())->byType;
+		packet.GetData((char*)&header, sizeof(st_PACKET_HEADER));
 
-		if (false == PacketProc(session, type, &packet))
+		if (false == PacketProc(session, header.byType, &packet))
 			break;
 	}
 }
@@ -298,6 +300,11 @@ bool Network::PacketProc(Session* session, unsigned char packetType, Packet* pac
 	{
 	case dfPACKET_CS_MOVE_START:
 		return Proc_MoveStart(session, packet);
+		break;
+	case dfPACKET_CS_MOVE_STOP:
+		return Proc_MoveStop(session, packet);
+		break;
+	default:
 		break;
 	}
 

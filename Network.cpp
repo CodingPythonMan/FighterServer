@@ -100,10 +100,17 @@ void Network::IOProcess()
 	DeleteSessions();
 }
 
+void Network::CleanUp()
+{
+	closesocket(_listenSock);
+
+	WSACleanup();
+}
+
 void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD_SET* wsetPtr)
 {
 	// 프레임 서버이므로 timeval 설정
-	timeval time{ 0, 0 };
+	timeval time{ 1, 0 };
 	int retval;
 
 	// 실질적인 select 함수를 호출하여 Readset 과 Writeset 을 확인하는 함수

@@ -13,6 +13,7 @@ public:
 
 	bool StartUp();
 	void IOProcess();
+	void CleanUp();
 
 private:
 	void SelectSocket(SOCKET* socketSet,int sockCount, FD_SET* rsetPtr, FD_SET* wsetPtr);

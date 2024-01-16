@@ -22,7 +22,6 @@ int main()
 		return 0;
 	}
 
-	unsigned int tick = 0;
 	unsigned int curTime = timeGetTime();
 	unsigned int ourTime = curTime;
 	unsigned int frameTime = curTime;
@@ -33,30 +32,26 @@ int main()
 
 		// 업데이트는 게임의 로직
 		// 로직 처리
-		Update();
-
+		if (ourTime < curTime)
+		{
+			Update();
+			Frame++;
+			ourTime += WAIT;
+		}
+			
 		// 키보드 입력을 통해서 서버를 제어할 경우 사용
 		ServerControl();
 
 		// 모니터링 정보를 표시, 저장, 전송하는 경우 사용
 		// Monitor();
 
-		Frame++;
-
 		curTime = timeGetTime();
 		if (curTime - frameTime >= 1000)
 		{
-			if(Frame > (1000 / WAIT) && Frame > (1000 / WAIT + 1))
+			if(Frame != (1000 / WAIT))
 				_LOG(LOG_LEVEL_DEBUG, L"Frame : %d", Frame);
 			Frame = 0;
-			frameTime = curTime;
-		}
-		tick = curTime - ourTime;
-		ourTime += WAIT;
-
-		if (tick <= WAIT)
-		{
-			Sleep(WAIT - tick);
+			frameTime += curTime;
 		}
 	}
 
@@ -64,7 +59,7 @@ int main()
 	
 	// 서버는 함부로 종료해도 안된다.
 	// DB에 저장할 데이터나 기타 마무리 할 일들이 모두 끝났는지 확인한 뒤 쓴다.
-
+	network.CleanUp();
 
 	return 0;
 }

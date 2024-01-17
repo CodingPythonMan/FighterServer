@@ -2,6 +2,7 @@
 #include "Console.h"
 #include "Log.h"
 #include "Game.h"
+#include "Profiler.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -51,7 +52,7 @@ int main()
 			if(Frame != (1000 / WAIT))
 				_LOG(LOG_LEVEL_DEBUG, L"Frame : %d", Frame);
 			Frame = 0;
-			frameTime += curTime;
+			frameTime = curTime;
 		}
 	}
 
@@ -60,6 +61,8 @@ int main()
 	// 서버는 함부로 종료해도 안된다.
 	// DB에 저장할 데이터나 기타 마무리 할 일들이 모두 끝났는지 확인한 뒤 쓴다.
 	network.CleanUp();
+
+	ProfileDataOutText(L"WhatIsThis.txt");
 
 	return 0;
 }

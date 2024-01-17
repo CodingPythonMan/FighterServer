@@ -4,6 +4,7 @@
 #include "Proxy.h"
 #include "Stub.h"
 #include "Send.h"
+#include "Profiler.h"
 
 Network::Network()
 {
@@ -59,6 +60,8 @@ bool Network::StartUp()
 	// 나중 파일로까지 남기고 싶다면 로그 레벨을 승격
 	wprintf(L"[Listen Status] : OK\n");
 
+	ProfileInit();
+
 	return false;
 }
 
@@ -82,8 +85,12 @@ void Network::IOProcess()
 		Count++;
 		
 		if (iter->second->SendQ.GetUseSize() > 0)
+		{
+			ProfileBegin(L"UseSizeLot");
 			FD_SET(iter->second->Socket, &wset);
-
+			ProfileBegin(L"UseSizeLot");
+		}
+			
 		// Select 최대치 도달. 만들어진 테이블 정보로 select 호출 후 정리
 		if (Count >= FD_SETSIZE)
 		{
@@ -110,7 +117,7 @@ void Network::CleanUp()
 void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD_SET* wsetPtr)
 {
 	// 프레임 서버이므로 timeval 설정
-	timeval time{ 1, 0 };
+	timeval time{ 0, 100 };
 	int retval;
 
 	// 실질적인 select 함수를 호출하여 Readset 과 Writeset 을 확인하는 함수
@@ -124,7 +131,9 @@ void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD
 		bool disconnectFlag = false;
 		if (FD_ISSET(socketSet[i], wsetPtr))
 		{
+			ProfileBegin(L"WriteProc");
 			disconnectFlag = WriteProc(socketSet[i]);
+			ProfileEnd(L"WriteProc");
 		}
 		
 		if (disconnectFlag == false)
@@ -132,9 +141,17 @@ void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD
 			if (FD_ISSET(socketSet[i], rsetPtr))
 			{
 				if (socketSet[i] == _listenSock)
+				{
+					ProfileBegin(L"AcceptProc");
 					AcceptProc();
+					ProfileEnd(L"AcceptProc");
+				}
 				else
+				{
+					ProfileBegin(L"ReadProc");
 					ReadProc(socketSet[i]);
+					ProfileBegin(L"ReadProc");
+				}	
 			}
 		}
 	}
@@ -239,10 +256,10 @@ void Network::ReadProc(SOCKET sock)
 	{
 		DisconnectSession(session);
 	}
-
+	
 	while (1)
 	{
-		// Peek 전에 오류 나버린다.
+		// Peek 전에 오류 나버린다.r
 		if (session->RecvQ.GetUseSize() <= sizeof(st_PACKET_HEADER))
 			break;
 

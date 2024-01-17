@@ -14,6 +14,8 @@ void LogFileInit()
 	time_t timer = time(nullptr); // 현재 시각을 초 단위로
 	localtime_s(&t, &timer); // 초 단위 시간 분리 후, 구조체
 
+	gLogLevel = LOG_LEVEL_ERROR;
+
 	sprintf_s(FileName, "%s_%4d_%02d_%02d.txt", "Log", 1900 + t.tm_year, t.tm_mon + 1, t.tm_mday);
 }
 

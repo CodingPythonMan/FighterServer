@@ -26,6 +26,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Network.cpp" />
     <ClCompile Include="Packet.cpp" />
+    <ClCompile Include="Profiler.cpp" />
     <ClCompile Include="Proxy.cpp" />
     <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="Sector.cpp" />
@@ -39,6 +40,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Packet.h" />
+    <ClInclude Include="Profiler.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="Proxy.h" />
     <ClInclude Include="RingBuffer.h" />

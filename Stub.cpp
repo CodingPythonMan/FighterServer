@@ -34,6 +34,9 @@ bool Proc_MoveStart(Session* session, Packet* packet)
 		mpSync(packet, character->SessionID, character->X, character->Y);
 		SendPacket_Around(session, packet, true);
 
+		_LOG(LOG_LEVEL_ERROR, L"Sync => Sync: %d, Before: (%d, %d), Client: (%d, %d) !", session->SessionID,
+			character->X, character->Y, X, Y);
+
 		X = character->X;
 		Y = character->Y;
 	}

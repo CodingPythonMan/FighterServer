@@ -57,11 +57,12 @@ void Update()
 			return;
 		}
 
-		if (character->X + dx >= dfRANGE_MOVE_LEFT && character->X + dx < dfRANGE_MOVE_RIGHT)
+		if ((character->X + dx >= dfRANGE_MOVE_LEFT && character->X + dx < dfRANGE_MOVE_RIGHT)
+			&& (character->Y + dy >= dfRANGE_MOVE_TOP && character->Y + dy < dfRANGE_MOVE_BOTTOM))
+		{
 			character->X += dx;
-
-		if (character->Y + dy >= dfRANGE_MOVE_TOP && character->Y + dy < dfRANGE_MOVE_BOTTOM)
 			character->Y += dy;
+		}
 
 		if (SectorUpdateCharacter(character))
 		{

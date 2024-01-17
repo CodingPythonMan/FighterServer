@@ -1,5 +1,6 @@
 #include "Send.h"
 #include "Character.h"
+#include "Log.h"
 
 int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
@@ -23,6 +24,10 @@ void SendPacket_Unicast(Session* session, Packet* packet)
 {
 	if (session->SendQ.GetFreeSize() > packet->GetDataSize())
 		session->SendQ.Enqueue((char*)packet->GetBufferPtr(), packet->GetDataSize());
+	else
+	{
+		_LOG(LOG_LEVEL_ERROR, L"%s", L"SendPacket => RingBuffer Full Error!");
+	}
 }
 
 void SendPacket_Around(Session* session, Packet* packet, bool me)

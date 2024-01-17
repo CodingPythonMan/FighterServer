@@ -13,6 +13,9 @@
     <Filter Include="Game">
       <UniqueIdentifier>{2f86cc0c-e803-4281-9e35-962bcf695a17}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Profiler">
+      <UniqueIdentifier>{d367e866-baff-4baf-b65a-3a7cc4fce211}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -50,6 +53,9 @@
     </ClCompile>
     <ClCompile Include="Sector.cpp">
       <Filter>Game</Filter>
+    </ClCompile>
+    <ClCompile Include="Profiler.cpp">
+      <Filter>Profiler</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +97,9 @@
     </ClInclude>
     <ClInclude Include="Sector.h">
       <Filter>Game</Filter>
+    </ClInclude>
+    <ClInclude Include="Profiler.h">
+      <Filter>Profiler</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

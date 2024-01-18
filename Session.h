@@ -17,6 +17,6 @@ struct Session {
 	{
 		Socket = socket;
 		SessionID = sessionID;
-		LastRecvTime = 0;
+		LastRecvTime = timeGetTime();
 	}
 };

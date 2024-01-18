@@ -82,3 +82,14 @@ void mpSync(Packet* packet, unsigned int SessionID, short X, short Y)
 	*packet << X;
 	*packet << Y;
 }
+
+void mpEcho(Packet* packet, unsigned int Time)
+{
+	st_PACKET_HEADER header;
+	header.byCode = dfPACKET_CODE;
+	header.bySize = 4;
+	header.byType = dfPACKET_SC_ECHO;
+	packet->Clear();
+	packet->PutData((char*)&header, sizeof(st_PACKET_HEADER));
+	*packet << Time;
+}

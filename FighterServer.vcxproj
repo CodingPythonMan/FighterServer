@@ -30,13 +30,14 @@
     <ClCompile Include="Proxy.cpp" />
     <ClCompile Include="RingBuffer.cpp" />
     <ClCompile Include="Sector.cpp" />
-    <ClCompile Include="Send.cpp" />
+    <ClCompile Include="PacketControl.cpp" />
     <ClCompile Include="Stub.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Character.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="GameInfo.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="Network.h" />
     <ClInclude Include="Packet.h" />
@@ -45,7 +46,7 @@
     <ClInclude Include="Proxy.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="Sector.h" />
-    <ClInclude Include="Send.h" />
+    <ClInclude Include="PacketControl.h" />
     <ClInclude Include="Session.h" />
     <ClInclude Include="Stub.h" />
   </ItemGroup>

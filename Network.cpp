@@ -3,7 +3,7 @@
 #include "Protocol.h"
 #include "Proxy.h"
 #include "Stub.h"
-#include "Send.h"
+#include "PacketControl.h"
 #include "Profiler.h"
 
 Network::Network()
@@ -60,8 +60,6 @@ bool Network::StartUp()
 	// 나중 파일로까지 남기고 싶다면 로그 레벨을 승격
 	wprintf(L"[Listen Status] : OK\n");
 
-	ProfileInit();
-
 	return false;
 }
 
@@ -86,9 +84,7 @@ void Network::IOProcess()
 		
 		if (iter->second->SendQ.GetUseSize() > 0)
 		{
-			ProfileBegin(L"UseSizeLot");
 			FD_SET(iter->second->Socket, &wset);
-			ProfileBegin(L"UseSizeLot");
 		}
 			
 		// Select 최대치 도달. 만들어진 테이블 정보로 select 호출 후 정리
@@ -142,15 +138,11 @@ void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD
 			{
 				if (socketSet[i] == _listenSock)
 				{
-					ProfileBegin(L"AcceptProc");
 					AcceptProc();
-					ProfileEnd(L"AcceptProc");
 				}
 				else
 				{
-					ProfileBegin(L"ReadProc");
 					ReadProc(socketSet[i]);
-					ProfileBegin(L"ReadProc");
 				}	
 			}
 		}
@@ -171,7 +163,8 @@ void Network::AcceptProc()
 	WCHAR IP[16];
 	InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
 	// Session 생성 알려주기
-	wprintf(L"[Client Connect] ID : %d, IP : %s, Port : %d\n", _uniqueID, IP, ntohs(clientAddr.sin_port));
+	_LOG(LOG_LEVEL_DEBUG, L"[Client Connect] ID : %d, IP : %s, Port : %d",
+		_uniqueID, IP, ntohs(clientAddr.sin_port));
 
 	// 캐릭터 생성
 	Character* character = new Character(session, _uniqueID);
@@ -329,6 +322,9 @@ bool Network::PacketProc(Session* session, unsigned char packetType, Packet* pac
 	case dfPACKET_CS_MOVE_STOP:
 		return Proc_MoveStop(session, packet);
 		break;
+	case dfPACKET_CS_ECHO:
+		return Proc_Echo(session, packet);
+		break;
 	default:
 		break;
 	}
@@ -347,15 +343,6 @@ Session* Network::CreateSession(SOCKET socket)
 	_sessionMap.insert({ socket, session });
 
 	return session;
-}
-
-void Network::DisconnectSession(Session* session)
-{
-	Packet Delete;
-	mpDeleteCharacter(&Delete, session->SessionID);
-	SendPacket_Around(session, &Delete);
-
-	_deleteList.push_back(session);
 }
 
 void Network::DeleteSessions()

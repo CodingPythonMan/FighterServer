@@ -1,5 +1,5 @@
 #include "Sector.h"
-#include "Send.h"
+#include "PacketControl.h"
 #include "Proxy.h"
 #include "Log.h"
 

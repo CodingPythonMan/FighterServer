@@ -274,16 +274,11 @@ struct st_PACKET_HEADER
 
 
 // Grid 를 나눌 수
-#define dfSECTOR_MAX_X 64
-#define dfSECTOR_MAX_Y 64
+#define dfSECTOR_MAX_X 20
+#define dfSECTOR_MAX_Y 20
 
 #define dfSECTOR_X (dfRANGE_MOVE_RIGHT / dfSECTOR_MAX_X)
 #define dfSECTOR_Y (dfRANGE_MOVE_BOTTOM / dfSECTOR_MAX_Y)
-
-//-----------------------------------------------------------------
-// 30초 이상이 되도록 아무런 메시지 수신도 없는경우 접속 끊음.
-//-----------------------------------------------------------------
-#define dfNETWORK_PACKET_RECV_TIMEOUT	30000
 
 //-----------------------------------------------------------------
 // 화면 이동 범위.

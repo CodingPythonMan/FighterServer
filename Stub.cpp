@@ -2,7 +2,7 @@
 #include "Log.h"
 #include "Character.h"
 #include <cmath>
-#include "Send.h"
+#include "PacketControl.h"
 #include "Proxy.h"
 #include "Sector.h"
 
@@ -34,8 +34,8 @@ bool Proc_MoveStart(Session* session, Packet* packet)
 		mpSync(packet, character->SessionID, character->X, character->Y);
 		SendPacket_Around(session, packet, true);
 
-		_LOG(LOG_LEVEL_ERROR, L"Sync => Sync: %d, Before: (%d, %d), Client: (%d, %d) !", session->SessionID,
-			character->X, character->Y, X, Y);
+		_LOG(LOG_LEVEL_ERROR, L"Start Sync => ID: %d, Before: (%d, %d), Client: (%d, %d), Direct: %d !", session->SessionID,
+			character->X, character->Y, X, Y, character->MoveDirect);
 
 		X = character->X;
 		Y = character->Y;
@@ -105,30 +105,18 @@ bool Proc_MoveStop(Session* session, Packet* packet)
 		mpSync(packet, character->SessionID, character->X, character->Y);
 		SendPacket_Around(session, packet, true);
 
+		_LOG(LOG_LEVEL_ERROR, L"Stop Sync => ID: %d, Before: (%d, %d), Client: (%d, %d), Direct: %d !", session->SessionID,
+			character->X, character->Y, X, Y, character->MoveDirect);
+
 		X = character->X;
 		Y = character->Y;
 	}
 
 	// 동작 변경
-	character->Action = dfPACKET_MOVE_STOP;
-
-	// 단순 방향 표시용
-	character->MoveDirect = Direct;
+	character->MoveDirect = dfPACKET_MOVE_STOP;
 
 	// 방향을 변경
-	switch (Direct)
-	{
-	case dfPACKET_MOVE_DIR_RR:
-	case dfPACKET_MOVE_DIR_RU:
-	case dfPACKET_MOVE_DIR_RD:
-		character->Direct = dfPACKET_MOVE_DIR_RR;
-		break;
-	case dfPACKET_MOVE_DIR_LU:
-	case dfPACKET_MOVE_DIR_LL:
-	case dfPACKET_MOVE_DIR_LD:
-		character->Direct = dfPACKET_MOVE_DIR_LL;
-		break;
-	}
+	character->Direct = Direct;
 	character->X = X;
 	character->Y = Y;
 
@@ -141,6 +129,16 @@ bool Proc_MoveStop(Session* session, Packet* packet)
 
 	mpMoveStop(packet, session->SessionID, Direct, X, Y);
 	SendPacket_Around(session, packet);
+
+	return true;
+}
+
+bool Proc_Echo(Session* session, Packet* packet)
+{
+	session->LastRecvTime = timeGetTime();
+
+	mpEcho(packet, session->LastRecvTime);
+	SendPacket_Unicast(session, packet);
 
 	return true;
 }

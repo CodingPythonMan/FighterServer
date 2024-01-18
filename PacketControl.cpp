@@ -1,9 +1,12 @@
-#include "Send.h"
+#include "PacketControl.h"
 #include "Character.h"
 #include "Log.h"
+#include "Proxy.h"
 
 int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+
+std::list<Session*> _deleteList;
 
 void SendPacket_SectorOne(int sectorX, int sectorY, Packet* packet, Session* exceptSession)
 {
@@ -27,6 +30,8 @@ void SendPacket_Unicast(Session* session, Packet* packet)
 	else
 	{
 		_LOG(LOG_LEVEL_ERROR, L"%s", L"SendPacket => RingBuffer Full Error!");
+		// SendQ 를 초과하면 연결을 바로 끊는다.
+		DisconnectSession(session);
 	}
 }
 
@@ -61,7 +66,11 @@ void SendPacket_Around(Session* session, Packet* packet, bool me)
 	}
 }
 
-void SendPacket_Broadcast(Session* session, Packet* packet)
+void DisconnectSession(Session* session)
 {
-	// 에코 메세지 쏠 떄, 필요할 수 있음.
+	Packet Delete;
+	mpDeleteCharacter(&Delete, session->SessionID);
+	SendPacket_Around(session, &Delete);
+
+	_deleteList.push_back(session);
 }

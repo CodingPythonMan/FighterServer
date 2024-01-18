@@ -26,14 +26,12 @@ private:
 
 	Session* FindSession(SOCKET socket);
 	Session* CreateSession(SOCKET socket);
-	void DisconnectSession(Session* session);
+
 	void DeleteSessions();
 
 private:
 	SOCKET _listenSock;
 	std::map<SOCKET, Session*> _sessionMap;
-
-	std::list<Session*> _deleteList;
 
 	unsigned int _uniqueID;
 };

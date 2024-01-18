@@ -2,11 +2,10 @@
 #include "Console.h"
 #include "Log.h"
 #include "Game.h"
+#include "GameInfo.h"
 #include "Profiler.h"
 
 #pragma comment(lib, "winmm.lib")
-
-#define WAIT 20
 
 int main()
 {
@@ -17,6 +16,7 @@ int main()
 	//LoadData();
 	Network network;
 
+	ProfileInit();
 	if (network.StartUp())
 	{
 		Log(const_cast<WCHAR*>(L"소켓 초기화 오류!\n"), LOG_LEVEL_DEBUG);
@@ -29,13 +29,17 @@ int main()
 	int Frame = 0;
 	while (Shutdown == false)
 	{
+		ProfileBegin(L"IOProcess");
 		network.IOProcess();
+		ProfileEnd(L"IOProcess");
 
 		// 업데이트는 게임의 로직
 		// 로직 처리
 		if (ourTime < curTime)
 		{
+			ProfileBegin(L"Update");
 			Update();
+			ProfileEnd(L"Update");
 			Frame++;
 			ourTime += WAIT;
 		}
@@ -49,7 +53,7 @@ int main()
 		curTime = timeGetTime();
 		if (curTime - frameTime >= 1000)
 		{
-			if(Frame != (1000 / WAIT))
+			if(Frame != FPS)
 				_LOG(LOG_LEVEL_DEBUG, L"Frame : %d", Frame);
 			Frame = 0;
 			frameTime = curTime;

@@ -101,7 +101,7 @@ void ProfileDataOutText(const WCHAR* szFileName)
 		return;
 
 	fwprintf(file, L"-------------------------------------------------------------------------------\n\n");
-	fwprintf(file, L"           Name  |     Average  |        Min   |        Max   |      Call |\n");
+	fwprintf(file, L"           Name  |     Average  |        Min   |        Max   |      Call \n");
 	fwprintf(file, L"-------------------------------------------------------------------------------\n");
 
 	for (int i = 0; i < MAX_PROFILE; i++)

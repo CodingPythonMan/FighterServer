@@ -48,7 +48,7 @@
     <ClCompile Include="Game.cpp">
       <Filter>Game</Filter>
     </ClCompile>
-    <ClCompile Include="Send.cpp">
+    <ClCompile Include="PacketControl.cpp">
       <Filter>Network</Filter>
     </ClCompile>
     <ClCompile Include="Sector.cpp">
@@ -92,7 +92,7 @@
     <ClInclude Include="Game.h">
       <Filter>Game</Filter>
     </ClInclude>
-    <ClInclude Include="Send.h">
+    <ClInclude Include="PacketControl.h">
       <Filter>Network</Filter>
     </ClInclude>
     <ClInclude Include="Sector.h">
@@ -100,6 +100,9 @@
     </ClInclude>
     <ClInclude Include="Profiler.h">
       <Filter>Profiler</Filter>
+    </ClInclude>
+    <ClInclude Include="GameInfo.h">
+      <Filter>Game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

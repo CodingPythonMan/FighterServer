@@ -3,10 +3,21 @@
 #include "Log.h"
 #include "Packet.h"
 #include "Proxy.h"
-#include "Send.h"
+#include "PacketControl.h"
+#include "GameInfo.h"
+
+unsigned int CallUpdate = 0;
 
 void Update()
 {
+	CallUpdate++;
+
+	if (CallUpdate >= FPS)
+	{
+		CheckLastReceiveTime();
+		CallUpdate = 0;
+	}
+
 	short dx;
 	short dy;
 	// 다른 CPP 쪽에서 플레이어 리스트를 들고 와야하고,
@@ -15,7 +26,7 @@ void Update()
 	{
 		Character* character = (*iter).second;
 
-		if (character->Action >= dfPACKET_MOVE_STOP)
+		if (character->MoveDirect >= dfPACKET_MOVE_STOP)
 			continue;
 		
 		switch (character->MoveDirect)
@@ -132,5 +143,19 @@ void SendMoveStartNewSection(Character* character)
 	default:
 		_LOG(LOG_LEVEL_ERROR, L"GameLogic => Direction Error!");
 		return;
+	}
+}
+
+void CheckLastReceiveTime()
+{
+	unsigned int time = timeGetTime();
+
+	for (auto iter = gCharacterMap.begin(); iter != gCharacterMap.end(); ++iter)
+	{
+		Character* character = iter->second;
+		if (dfNETWORK_PACKET_RECV_TIMEOUT < (time - character->SessionPtr->LastRecvTime))
+		{
+			DisconnectSession(character->SessionPtr);
+		}
 	}
 }

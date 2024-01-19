@@ -1,8 +1,8 @@
 #pragma once
 #include "Session.h"
+#include "Protocol.h"
 #include <list>
 #include <map>
-#include "Protocol.h"
 
 #define IS_MOVE 1
 #define DEFAULT_HP 100
@@ -17,6 +17,9 @@ class Character
 public:
 	Character(Session* sessionPtr, unsigned int SessionID);
 	virtual ~Character();
+
+	void OnDamage(char Damage);
+	bool IsDead();
 
 	Session* SessionPtr;
 	unsigned int SessionID;

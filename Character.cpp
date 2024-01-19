@@ -1,10 +1,11 @@
 #include "Character.h"
 
-// 캐릭터 관리
 std::map<unsigned int, Character*> gCharacterMap;
 
 // 월드맵 캐릭터 섹터
 std::list<Character*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
+
+int Temp = 0;
 
 Character::Character(Session* sessionPtr, unsigned int sessionID)
 {
@@ -15,6 +16,31 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 	MoveDirect = dfPACKET_MOVE_STOP;
 	X = rand() % dfRANGE_MOVE_RIGHT;
 	Y = rand() % dfRANGE_MOVE_BOTTOM;
+
+	if (Temp == 0)
+	{
+		X = 200;
+		Y = 200;
+		Temp++;
+	}
+	else if (Temp == 1)
+	{
+		X = 300;
+		Y = 300;
+		Temp++;
+	}
+	else if (Temp == 2)
+	{
+		X = 350;
+		Y = 350;
+		Temp++;
+	}
+	else if (Temp == 3)
+	{
+		X = 330;
+		Y = 330;
+		Temp++;
+	}
 
 	Sector.X = X / dfSECTOR_X;
 	Sector.Y = Y / dfSECTOR_Y;
@@ -29,6 +55,19 @@ Character::~Character()
 {
 	gSector[Sector.Y][Sector.X].remove(this);
 	gCharacterMap.erase(SessionID);
+}
+
+void Character::OnDamage(char Damage)
+{
+	HP -= Damage;
+}
+
+bool Character::IsDead()
+{
+	if (HP > 0)
+		return false;
+
+	return true;
 }
 
 Character* FindCharacter(unsigned int SessionID)

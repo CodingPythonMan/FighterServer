@@ -1,7 +1,7 @@
 #include "PacketControl.h"
-#include "Character.h"
 #include "Log.h"
 #include "Proxy.h"
+#include "Character.h"
 
 int dx[8] = { 1, 1, 0, -1, -1, -1, 0, 1 };
 int dy[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };

@@ -70,6 +70,33 @@ void mpMoveStop(Packet* packet, unsigned int SessionID, unsigned char Direct, sh
 	*packet << Y;
 }
 
+void mpAttack001(Packet* packet, unsigned int SessionID, unsigned char Direct, short X, short Y)
+{
+	st_PACKET_HEADER header;
+	header.byCode = dfPACKET_CODE;
+	header.bySize = 9;
+	header.byType = dfPACKET_SC_ATTACK1;
+	packet->Clear();
+	packet->PutData((char*)&header, sizeof(st_PACKET_HEADER));
+	*packet << SessionID;
+	*packet << Direct;
+	*packet << X;
+	*packet << Y;
+}
+
+void mpDamage(Packet* packet, unsigned int AttackID, unsigned int DamageID, char Damage)
+{
+	st_PACKET_HEADER header;
+	header.byCode = dfPACKET_CODE;
+	header.bySize = 9;
+	header.byType = dfPACKET_SC_DAMAGE;
+	packet->Clear();
+	packet->PutData((char*)&header, sizeof(st_PACKET_HEADER));
+	*packet << AttackID;
+	*packet << DamageID;
+	*packet << Damage;
+}
+
 void mpSync(Packet* packet, unsigned int SessionID, short X, short Y)
 {
 	st_PACKET_HEADER header;

@@ -133,6 +133,69 @@ bool Proc_MoveStop(Session* session, Packet* packet)
 	return true;
 }
 
+bool Proc_Attack001(Session* session, Packet* packet)
+{
+	unsigned char Direct;
+	short X, Y;
+
+	*packet >> Direct;
+	*packet >> X;
+	*packet >> Y;
+
+	Character* attacker = FindCharacter(session->SessionID);
+	attacker->X = X;
+	attacker->Y = Y;
+	attacker->Direct = Direct;
+
+	SectorPos Sector = attacker->Sector;
+
+	// 같은 섹터 안에서만 판단하면 안된다.
+	// 공격을 꼭지점화 해서 우리 섹터를 벗어나는지 판단 후
+	// 넘어가는 공격이 있으면 해당 섹터 리스트도 공격 범위를 체크 한다.
+
+	// 우선 같은 섹터 체크
+	std::list<Character*> characterList = gSector[Sector.Y][Sector.X];
+	if (Direct == dfPACKET_MOVE_DIR_LL)
+	{
+		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+		{
+			Character* target = *iter;
+			if ((target->X - dfATTACK1_RANGE_X < X && X >= target->X)
+				&& (target->Y < Y + dfATTACK1_RANGE_Y && target->Y >= Y))
+			{
+				if (target == attacker)
+					continue;
+
+				target->OnDamage(dfATTACK1_DAMAGE);
+				mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+				SendPacket_Around(target->SessionPtr, packet, true);
+
+				if (target->IsDead())
+					DisconnectSession(target->SessionPtr);
+			}
+		}
+	}
+	else
+	{
+
+	}
+
+	mpAttack001(packet, session->SessionID, Direct, X, Y);
+	SendPacket_Around(session, packet);
+
+	return true;
+}
+
+bool Proc_Attack002(Session* session, Packet* packet)
+{
+	return false;
+}
+
+bool Proc_Attack003(Session* session, Packet* packet)
+{
+	return false;
+}
+
 bool Proc_Echo(Session* session, Packet* packet)
 {
 	session->LastRecvTime = timeGetTime();

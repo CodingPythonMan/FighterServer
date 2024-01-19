@@ -4,7 +4,6 @@
 #include "Proxy.h"
 #include "Stub.h"
 #include "PacketControl.h"
-#include "Profiler.h"
 
 Network::Network()
 {
@@ -127,9 +126,7 @@ void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD
 		bool disconnectFlag = false;
 		if (FD_ISSET(socketSet[i], wsetPtr))
 		{
-			ProfileBegin(L"WriteProc");
 			disconnectFlag = WriteProc(socketSet[i]);
-			ProfileEnd(L"WriteProc");
 		}
 		
 		if (disconnectFlag == false)
@@ -151,74 +148,89 @@ void Network::SelectSocket(SOCKET* socketSet, int sockCount, FD_SET* rsetPtr, FD
 
 void Network::AcceptProc()
 {
-	SOCKADDR_IN clientAddr;
-	int addrLen = sizeof(clientAddr);
-	SOCKET clientSock = accept(_listenSock, (SOCKADDR*)&clientAddr, &addrLen);
-	if (clientSock == INVALID_SOCKET)
-		return;
-
-	// 세션 생성
-	Session* session = CreateSession(clientSock);
-
-	WCHAR IP[16];
-	InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
-	// Session 생성 알려주기
-	_LOG(LOG_LEVEL_DEBUG, L"[Client Connect] ID : %d, IP : %s, Port : %d",
-		_uniqueID, IP, ntohs(clientAddr.sin_port));
-
-	// 캐릭터 생성
-	Character* character = new Character(session, _uniqueID);
-
-	// 1. 당사자에게 생성됐음을 알려주기
-	Packet CreateMyChar;
-	mpCreateMyCharacter(&CreateMyChar, _uniqueID, character->Direct,
-		character->X, character->Y, character->HP);
-
-	SendPacket_Unicast(session, &CreateMyChar);
-
-	// 2. 다른 사람에게 알려주기
-	Packet CreateOtherChar;
-	mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
-		character->X, character->Y, character->HP);
-
-	SendPacket_Around(session, &CreateOtherChar);
-
-	// 3. 다른 사람 위치 받기
-	SectorPos pos = FindSectorPos(session->SessionID);
-
-	std::list<Character*> characterList = gSector[pos.Y][pos.X];
-	for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+	while (1)
 	{
-		character = *iter;
-		if (character->SessionPtr == session)
-			continue;
+		SOCKADDR_IN clientAddr;
+		int addrLen = sizeof(clientAddr);
+		SOCKET clientSock = accept(_listenSock, (SOCKADDR*)&clientAddr, &addrLen);
+
+		if (clientSock == INVALID_SOCKET)
+		{
+			clientSock = GetLastError();
+
+			if (clientSock == WSAEWOULDBLOCK)
+				break;
+			else if (clientSock == WSAECONNRESET)
+				continue;
+			else
+			{
+				_LOG(LOG_LEVEL_ERROR, L"[Accept Error] ErrorCode : %d", clientSock);
+			}
+		}
 		
-		mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
+		// 세션 생성
+		Session* session = CreateSession(clientSock);
+
+		WCHAR IP[16];
+		InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
+		// Session 생성 알려주기
+		_LOG(LOG_LEVEL_DEBUG, L"[Client Connect] ID : %d, IP : %s, Port : %d",
+			_uniqueID, IP, ntohs(clientAddr.sin_port));
+
+		// 캐릭터 생성
+		Character* character = new Character(session, _uniqueID);
+
+		// 1. 당사자에게 생성됐음을 알려주기
+		Packet CreateMyChar;
+		mpCreateMyCharacter(&CreateMyChar, _uniqueID, character->Direct,
 			character->X, character->Y, character->HP);
-		SendPacket_Unicast(session, &CreateOtherChar);
-	}
 
-	// 8방향에 대해서 Sector Send
-	for (int i = 0; i < 8; i++)
-	{
-		int dX = pos.X + dx[i];
-		int dY = pos.Y + dy[i];
+		SendPacket_Unicast(session, &CreateMyChar);
 
-		if (dX < 0 || dX >= dfSECTOR_MAX_X || dY < 0 || dY >= dfSECTOR_MAX_Y)
-			continue;
+		// 2. 다른 사람에게 알려주기
+		Packet CreateOtherChar;
+		mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+			character->X, character->Y, character->HP);
 
-		characterList = gSector[dY][dX];
+		SendPacket_Around(session, &CreateOtherChar);
 
+		// 3. 다른 사람 위치 받기
+		SectorPos pos = FindSectorPos(session->SessionID);
+
+		std::list<Character*> characterList = gSector[pos.Y][pos.X];
 		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 		{
 			character = *iter;
+			if (character->SessionPtr == session)
+				continue;
+
 			mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
 				character->X, character->Y, character->HP);
 			SendPacket_Unicast(session, &CreateOtherChar);
 		}
-	}
 
-	_uniqueID++;
+		// 8방향에 대해서 Sector Send
+		for (int i = 0; i < 8; i++)
+		{
+			int dX = pos.X + dx[i];
+			int dY = pos.Y + dy[i];
+
+			if (dX < 0 || dX >= dfSECTOR_MAX_X || dY < 0 || dY >= dfSECTOR_MAX_Y)
+				continue;
+
+			characterList = gSector[dY][dX];
+
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+			{
+				character = *iter;
+				mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
+					character->X, character->Y, character->HP);
+				SendPacket_Unicast(session, &CreateOtherChar);
+			}
+		}
+
+		_uniqueID++;
+	}
 }
 
 void Network::ReadProc(SOCKET sock)
@@ -242,6 +254,11 @@ void Network::ReadProc(SOCKET sock)
 		else if (retval == WSAECONNRESET)
 		{
 			DisconnectSession(session);
+			return;
+		}
+		else
+		{
+			_LOG(LOG_LEVEL_ERROR, L"[Read Error] ErrorCode : %d", retval);
 			return;
 		}
 	}
@@ -321,6 +338,9 @@ bool Network::PacketProc(Session* session, unsigned char packetType, Packet* pac
 		break;
 	case dfPACKET_CS_MOVE_STOP:
 		return Proc_MoveStop(session, packet);
+		break;
+	case dfPACKET_CS_ATTACK1:
+		return Proc_Attack001(session, packet);
 		break;
 	case dfPACKET_CS_ECHO:
 		return Proc_Echo(session, packet);

@@ -1,6 +1,5 @@
 #include "Stub.h"
 #include "Log.h"
-#include "Character.h"
 #include <cmath>
 #include "PacketControl.h"
 #include "Proxy.h"
@@ -154,14 +153,17 @@ bool Proc_Attack001(Session* session, Packet* packet)
 	// 넘어가는 공격이 있으면 해당 섹터 리스트도 공격 범위를 체크 한다.
 
 	// 우선 같은 섹터 체크
-	std::list<Character*> characterList = gSector[Sector.Y][Sector.X];
+	bool exceedX = ((X - dfATTACK1_RANGE_X) / dfSECTOR_MAX_X == attacker->Sector.X);
+	bool exceedY = ((Y + dfATTACK1_RANGE_Y) / dfSECTOR_MAX_Y == attacker->Sector.Y);
+	
 	if (Direct == dfPACKET_MOVE_DIR_LL)
 	{
+		std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
 		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 		{
 			Character* target = *iter;
-			if ((target->X - dfATTACK1_RANGE_X < X && X >= target->X)
-				&& (target->Y < Y + dfATTACK1_RANGE_Y && target->Y >= Y))
+			if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
+				&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
 			{
 				if (target == attacker)
 					continue;
@@ -177,7 +179,24 @@ bool Proc_Attack001(Session* session, Packet* packet)
 	}
 	else
 	{
+		std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+		{
+			Character* target = *iter;
+			if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
+				&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+			{
+				if (target == attacker)
+					continue;
 
+				target->OnDamage(dfATTACK1_DAMAGE);
+				mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+				SendPacket_Around(target->SessionPtr, packet, true);
+
+				if (target->IsDead())
+					DisconnectSession(target->SessionPtr);
+			}
+		}
 	}
 
 	mpAttack001(packet, session->SessionID, Direct, X, Y);
@@ -198,9 +217,9 @@ bool Proc_Attack003(Session* session, Packet* packet)
 
 bool Proc_Echo(Session* session, Packet* packet)
 {
-	session->LastRecvTime = timeGetTime();
-
-	mpEcho(packet, session->LastRecvTime);
+	unsigned int time;
+	*packet >> time;
+	mpEcho(packet, time);
 	SendPacket_Unicast(session, packet);
 
 	return true;

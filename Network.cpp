@@ -287,6 +287,9 @@ void Network::ReadProc(SOCKET sock)
 		retval = session->RecvQ.Dequeue(packet.GetBufferPtr(), sizeof(st_PACKET_HEADER) + header.bySize);
 		packet.GetData((char*)&header, sizeof(st_PACKET_HEADER));
 
+		// 왔다면 시간 갱신
+		session->LastRecvTime = timeGetTime();
+
 		if (false == PacketProc(session, header.byType, &packet))
 			break;
 	}

@@ -19,14 +19,14 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 
 	if (Temp == 0)
 	{
-		X = 200;
-		Y = 200;
+		X = 6300;
+		Y = 6300;
 		Temp++;
 	}
 	else if (Temp == 1)
 	{
-		X = 300;
-		Y = 300;
+		X = 6250;
+		Y = 6250;
 		Temp++;
 	}
 	else if (Temp == 2)
@@ -42,8 +42,8 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 		Temp++;
 	}
 
-	Sector.X = X / dfSECTOR_X;
-	Sector.Y = Y / dfSECTOR_Y;
+	Sector.X = X / dfSECTOR_GRID_X;
+	Sector.Y = Y / dfSECTOR_GRID_Y;
 	HP = DEFAULT_HP;
 
 	// 캐릭터 추가

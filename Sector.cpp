@@ -8,8 +8,8 @@ bool SectorUpdateCharacter(Character* character)
 	// 기존 섹터 기억
 	SectorPos beforeSector = character->Sector;
 
-	short newX = character->X / dfSECTOR_X;
-	short newY = character->Y / dfSECTOR_Y;
+	short newX = character->X / dfSECTOR_GRID_X;
+	short newY = character->Y / dfSECTOR_GRID_Y;
 
 	if (beforeSector.X == newX && beforeSector.Y == newY)
 		return false;

@@ -3,7 +3,7 @@
 #include "Log.h"
 #include "Game.h"
 #include "GameInfo.h"
-#include "Profiler.h"
+//#include "Profiler.h"
 
 #pragma comment(lib, "winmm.lib")
 
@@ -16,7 +16,7 @@ int main()
 	//LoadData();
 	Network network;
 
-	ProfileInit();
+	//ProfileInit();
 	if (network.StartUp())
 	{
 		Log(const_cast<WCHAR*>(L"소켓 초기화 오류!\n"), LOG_LEVEL_DEBUG);
@@ -29,17 +29,17 @@ int main()
 	int Frame = 0;
 	while (Shutdown == false)
 	{
-		ProfileBegin(L"IOProcess");
+		//ProfileBegin(L"IOProcess");
 		network.IOProcess();
-		ProfileEnd(L"IOProcess");
+		//ProfileEnd(L"IOProcess");
 
 		// 업데이트는 게임의 로직
 		// 로직 처리
 		if (ourTime < curTime)
 		{
-			ProfileBegin(L"Update");
+			//ProfileBegin(L"Update");
 			Update();
-			ProfileEnd(L"Update");
+			//ProfileEnd(L"Update");
 			Frame++;
 			ourTime += WAIT;
 		}
@@ -66,7 +66,7 @@ int main()
 	// DB에 저장할 데이터나 기타 마무리 할 일들이 모두 끝났는지 확인한 뒤 쓴다.
 	network.CleanUp();
 
-	ProfileDataOutText(L"WhatIsThis.txt");
+	//ProfileDataOutText(L"WhatIsThis.txt");
 
 	return 0;
 }

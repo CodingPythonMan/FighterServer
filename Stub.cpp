@@ -156,26 +156,66 @@ bool Proc_Attack001(Session* session, Packet* packet)
 	bool exceedX = ((X - dfATTACK1_RANGE_X) / dfSECTOR_MAX_X == attacker->Sector.X);
 	bool exceedY = ((Y + dfATTACK1_RANGE_Y) / dfSECTOR_MAX_Y == attacker->Sector.Y);
 	
+	bool AttackSucceed;
+
 	if (Direct == dfPACKET_MOVE_DIR_LL)
 	{
-		std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
-		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+		if (exceedX == true && exceedY == true)
 		{
-			Character* target = *iter;
-			if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
-				&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 			{
-				if (target == attacker)
-					continue;
+				Character* target = *iter;
+				if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
+					&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+				{
+					if (target == attacker)
+						continue;
 
-				target->OnDamage(dfATTACK1_DAMAGE);
-				mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
-				SendPacket_Around(target->SessionPtr, packet, true);
+					target->OnDamage(dfATTACK1_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
 
-				if (target->IsDead())
-					DisconnectSession(target->SessionPtr);
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					break;
+				}
 			}
 		}
+		else if (exceedX == true && exceedY == false)
+		{
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+			{
+				Character* target = *iter;
+				if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
+					&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+				{
+					if (target == attacker)
+						continue;
+
+					target->OnDamage(dfATTACK1_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
+
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					break;
+				}
+			}
+		}
+		else if (exceedX == false && exceedY == true)
+		{
+
+		}
+		else
+		{
+
+		}
+
+		
 	}
 	else
 	{

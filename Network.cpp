@@ -164,7 +164,7 @@ void Network::AcceptProc()
 				continue;
 			else
 			{
-				_LOG(LOG_LEVEL_ERROR, L"[Accept Error] ErrorCode : %d", clientSock);
+				_LOG(LOG_LEVEL_ERROR, L"[Accept Error] ErrorCode : %d", (int)clientSock);
 			}
 		}
 		
@@ -344,6 +344,12 @@ bool Network::PacketProc(Session* session, unsigned char packetType, Packet* pac
 		break;
 	case dfPACKET_CS_ATTACK1:
 		return Proc_Attack001(session, packet);
+		break;
+	case dfPACKET_CS_ATTACK2:
+		return Proc_Attack002(session, packet);
+		break;
+	case dfPACKET_CS_ATTACK3:
+		return Proc_Attack003(session, packet);
 		break;
 	case dfPACKET_CS_ECHO:
 		return Proc_Echo(session, packet);

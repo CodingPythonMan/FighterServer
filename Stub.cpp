@@ -153,21 +153,22 @@ bool Proc_Attack001(Session* session, Packet* packet)
 	// 넘어가는 공격이 있으면 해당 섹터 리스트도 공격 범위를 체크 한다.
 
 	// 우선 같은 섹터 체크
-	bool exceedX = ((X - dfATTACK1_RANGE_X) / dfSECTOR_MAX_X == attacker->Sector.X);
-	bool exceedY = ((Y + dfATTACK1_RANGE_Y) / dfSECTOR_MAX_Y == attacker->Sector.Y);
-	
-	bool AttackSucceed;
+	bool exceedX;
+	bool exceedY;
 
-	if (Direct == dfPACKET_MOVE_DIR_LL)
-	{
-		if (exceedX == true && exceedY == true)
+	bool attackSuccess = false;
+
+	do {
+		// 섹터가 넘어가는지 판단하고 다른 섹터의 Character List 를 들고 온 후 판단해야한다.
+		if (Direct == dfPACKET_MOVE_DIR_LL)
 		{
+			// 우선 같은 섹터에서 체크
 			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
 			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 			{
 				Character* target = *iter;
-				if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
-					&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+				if ((target->X >= X - dfATTACK1_RANGE_X && target->X <= attacker->X)
+					&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= attacker->Y))
 				{
 					if (target == attacker)
 						continue;
@@ -179,66 +180,210 @@ bool Proc_Attack001(Session* session, Packet* packet)
 					if (target->IsDead())
 						DisconnectSession(target->SessionPtr);
 
+					attackSuccess = true;
 					break;
 				}
 			}
-		}
-		else if (exceedX == true && exceedY == false)
-		{
-			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
-			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+
+			if (attackSuccess == true)
+				break;
+
+			exceedX = ((X - dfATTACK1_RANGE_X) / dfSECTOR_MAX_X != attacker->Sector.X);
+			exceedY = ((Y - dfATTACK1_RANGE_Y) / dfSECTOR_MAX_Y != attacker->Sector.Y);
+
+			if (exceedX == true && Sector.X > 0)
 			{
-				Character* target = *iter;
-				if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
-					&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+				std::list<Character*>& characterList = gSector[Sector.Y][Sector.X - 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 				{
-					if (target == attacker)
-						continue;
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK1_RANGE_X && target->X <= attacker->X)
+						&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= attacker->Y))
+					{
+						if (target == attacker)
+							continue;
 
-					target->OnDamage(dfATTACK1_DAMAGE);
-					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
-					SendPacket_Around(target->SessionPtr, packet, true);
+						target->OnDamage(dfATTACK1_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
 
-					if (target->IsDead())
-						DisconnectSession(target->SessionPtr);
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
 
-					break;
+						attackSuccess = true;
+						break;
+					}
 				}
 			}
-		}
-		else if (exceedX == false && exceedY == true)
-		{
 
+			if (attackSuccess == true)
+				break;
+
+			if (exceedY == true && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK1_RANGE_X && target->X <= attacker->X)
+						&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= attacker->Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK1_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedX == true && exceedY == true && Sector.X > 0 && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y-1][Sector.X-1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK1_RANGE_X && target->X <= attacker->X)
+						&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= attacker->Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK1_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						break;
+					}
+				}
+			}
 		}
 		else
 		{
-
-		}
-
-		
-	}
-	else
-	{
-		std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
-		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
-		{
-			Character* target = *iter;
-			if ((target->X >= X - dfATTACK1_RANGE_X && attacker->X >= target->X)
-				&& (target->Y <= Y + dfATTACK1_RANGE_Y && target->Y >= attacker->Y))
+			// 우선 같은 섹터에서 체크
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 			{
-				if (target == attacker)
-					continue;
+				Character* target = *iter;
+				if ((target->X <= X + dfATTACK1_RANGE_X && target->X >= attacker->X)
+					&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= attacker->Y))
+				{
+					if (target == attacker)
+						continue;
 
-				target->OnDamage(dfATTACK1_DAMAGE);
-				mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
-				SendPacket_Around(target->SessionPtr, packet, true);
+					target->OnDamage(dfATTACK1_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
 
-				if (target->IsDead())
-					DisconnectSession(target->SessionPtr);
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					attackSuccess = true;
+					break;
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			exceedX = ((X + dfATTACK1_RANGE_X) / dfSECTOR_MAX_X != attacker->Sector.X);
+			exceedY = ((Y - dfATTACK1_RANGE_Y) / dfSECTOR_MAX_Y != attacker->Sector.Y);
+
+			if (exceedX == true && Sector.X < dfSECTOR_MAX_X - 1)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y][Sector.X + 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK1_RANGE_X && target->X >= X)
+						&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK1_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedY == true && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK1_RANGE_X && target->X >= attacker->X)
+						&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= attacker->Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK1_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedX == true && exceedY == true && Sector.X < dfSECTOR_MAX_X - 1 && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X + 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK1_RANGE_X && target->X >= X)
+						&& (target->Y >= Y - dfATTACK1_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK1_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						break;
+					}
+				}
 			}
 		}
-	}
-
+	} while (false);
+	
 	mpAttack001(packet, session->SessionID, Direct, X, Y);
 	SendPacket_Around(session, packet);
 
@@ -247,12 +392,518 @@ bool Proc_Attack001(Session* session, Packet* packet)
 
 bool Proc_Attack002(Session* session, Packet* packet)
 {
-	return false;
+	unsigned char Direct;
+	short X, Y;
+
+	*packet >> Direct;
+	*packet >> X;
+	*packet >> Y;
+
+	Character* attacker = FindCharacter(session->SessionID);
+	attacker->X = X;
+	attacker->Y = Y;
+	attacker->Direct = Direct;
+
+	SectorPos Sector = attacker->Sector;
+
+	// 같은 섹터 안에서만 판단하면 안된다.
+	// 공격을 꼭지점화 해서 우리 섹터를 벗어나는지 판단 후
+	// 넘어가는 공격이 있으면 해당 섹터 리스트도 공격 범위를 체크 한다.
+
+	// 우선 같은 섹터 체크
+	bool exceedX;
+	bool exceedY;
+
+	bool attackSuccess = false;
+
+	do {
+		// 섹터가 넘어가는지 판단하고 다른 섹터의 Character List 를 들고 온 후 판단해야한다.
+		if (Direct == dfPACKET_MOVE_DIR_LL)
+		{
+			// 우선 같은 섹터에서 체크
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+			{
+				Character* target = *iter;
+				if ((target->X >= X - dfATTACK2_RANGE_X && target->X <= X)
+					&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= Y))
+				{
+					if (target == attacker)
+						continue;
+
+					target->OnDamage(dfATTACK2_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
+
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					attackSuccess = true;
+					break;
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			exceedX = ((X - dfATTACK2_RANGE_X) / dfSECTOR_MAX_X != attacker->Sector.X);
+			exceedY = ((Y - dfATTACK2_RANGE_Y) / dfSECTOR_MAX_Y != attacker->Sector.Y);
+
+			if (exceedX == true && Sector.X > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y][Sector.X - 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK2_RANGE_X && target->X <= X)
+						&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK2_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedY == true && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK2_RANGE_X && target->X <= X)
+						&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK2_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedX == true && exceedY == true && Sector.X > 0 && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X - 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK2_RANGE_X && target->X <= X)
+						&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK2_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			// 우선 같은 섹터에서 체크
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+			{
+				Character* target = *iter;
+				if ((target->X <= X + dfATTACK2_RANGE_X && target->X >= X)
+					&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= Y))
+				{
+					if (target == attacker)
+						continue;
+
+					target->OnDamage(dfATTACK2_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
+
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					attackSuccess = true;
+					break;
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			exceedX = ((X + dfATTACK2_RANGE_X) / dfSECTOR_MAX_X != attacker->Sector.X);
+			exceedY = ((Y - dfATTACK2_RANGE_Y) / dfSECTOR_MAX_Y != attacker->Sector.Y);
+
+			if (exceedX == true && Sector.X < dfSECTOR_MAX_X - 1)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y][Sector.X + 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK2_RANGE_X && target->X >= X)
+						&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK2_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedY == true && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK2_RANGE_X && target->X >= attacker->X)
+						&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= attacker->Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK2_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedX == true && exceedY == true && Sector.X < dfSECTOR_MAX_X - 1 && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X + 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK2_RANGE_X && target->X >= attacker->X)
+						&& (target->Y >= Y - dfATTACK2_RANGE_Y && target->Y <= attacker->Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK2_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						break;
+					}
+				}
+			}
+		}
+	} while (false);
+
+	mpAttack002(packet, session->SessionID, Direct, X, Y);
+	SendPacket_Around(session, packet);
+
+	return true;
 }
 
 bool Proc_Attack003(Session* session, Packet* packet)
 {
-	return false;
+	unsigned char Direct;
+	short X, Y;
+
+	*packet >> Direct;
+	*packet >> X;
+	*packet >> Y;
+
+	Character* attacker = FindCharacter(session->SessionID);
+	attacker->X = X;
+	attacker->Y = Y;
+	attacker->Direct = Direct;
+
+	SectorPos Sector = attacker->Sector;
+
+	// 같은 섹터 안에서만 판단하면 안된다.
+	// 공격을 꼭지점화 해서 우리 섹터를 벗어나는지 판단 후
+	// 넘어가는 공격이 있으면 해당 섹터 리스트도 공격 범위를 체크 한다.
+
+	// 우선 같은 섹터 체크
+	bool exceedX;
+	bool exceedY;
+
+	bool attackSuccess = false;
+
+	do {
+		// 섹터가 넘어가는지 판단하고 다른 섹터의 Character List 를 들고 온 후 판단해야한다.
+		if (Direct == dfPACKET_MOVE_DIR_LL)
+		{
+			// 우선 같은 섹터에서 체크
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+			{
+				Character* target = *iter;
+				if ((target->X >= X - dfATTACK3_RANGE_X && target->X <= X)
+					&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+				{
+					if (target == attacker)
+						continue;
+
+					target->OnDamage(dfATTACK3_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
+
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					attackSuccess = true;
+					break;
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			exceedX = ((X - dfATTACK3_RANGE_X) / dfSECTOR_MAX_X != attacker->Sector.X);
+			exceedY = ((Y - dfATTACK3_RANGE_Y) / dfSECTOR_MAX_Y != attacker->Sector.Y);
+
+			if (exceedX == true && Sector.X > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y][Sector.X - 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK3_RANGE_X && target->X <= X)
+						&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK3_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedY == true && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK3_RANGE_X && target->X <= X)
+						&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK3_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedX == true && exceedY == true && Sector.X > 0 && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X - 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X >= X - dfATTACK3_RANGE_X && target->X <= X)
+						&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK3_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			// 우선 같은 섹터에서 체크
+			std::list<Character*>& characterList = gSector[Sector.Y][Sector.X];
+			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+			{
+				Character* target = *iter;
+				if ((target->X <= X + dfATTACK3_RANGE_X && target->X >= X)
+					&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+				{
+					if (target == attacker)
+						continue;
+
+					target->OnDamage(dfATTACK3_DAMAGE);
+					mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+					SendPacket_Around(target->SessionPtr, packet, true);
+
+					if (target->IsDead())
+						DisconnectSession(target->SessionPtr);
+
+					attackSuccess = true;
+					break;
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			exceedX = ((X + dfATTACK3_RANGE_X) / dfSECTOR_MAX_X != attacker->Sector.X);
+			exceedY = ((Y - dfATTACK3_RANGE_Y) / dfSECTOR_MAX_Y != attacker->Sector.Y);
+
+			if (exceedX == true && Sector.X < dfSECTOR_MAX_X - 1)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y][Sector.X + 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK3_RANGE_X && target->X >= X)
+						&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK3_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedY == true && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK3_RANGE_X && target->X >= X)
+						&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK3_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						attackSuccess = true;
+						break;
+					}
+				}
+			}
+
+			if (attackSuccess == true)
+				break;
+
+			if (exceedX == true && exceedY == true && Sector.X < dfSECTOR_MAX_X - 1 && Sector.Y > 0)
+			{
+				std::list<Character*>& characterList = gSector[Sector.Y - 1][Sector.X + 1];
+				for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
+				{
+					Character* target = *iter;
+					if ((target->X <= X + dfATTACK3_RANGE_X && target->X >= X)
+						&& (target->Y >= Y - dfATTACK3_RANGE_Y && target->Y <= Y))
+					{
+						if (target == attacker)
+							continue;
+
+						target->OnDamage(dfATTACK3_DAMAGE);
+						mpDamage(packet, attacker->SessionID, target->SessionID, target->HP);
+						SendPacket_Around(target->SessionPtr, packet, true);
+
+						if (target->IsDead())
+							DisconnectSession(target->SessionPtr);
+
+						break;
+					}
+				}
+			}
+		}
+	} while (false);
+
+	mpAttack003(packet, session->SessionID, Direct, X, Y);
+	SendPacket_Around(session, packet);
+
+	return true;
 }
 
 bool Proc_Echo(Session* session, Packet* packet)

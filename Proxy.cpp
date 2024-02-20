@@ -84,6 +84,34 @@ void mpAttack001(Packet* packet, unsigned int SessionID, unsigned char Direct, s
 	*packet << Y;
 }
 
+void mpAttack002(Packet* packet, unsigned int SessionID, unsigned char Direct, short X, short Y)
+{
+	st_PACKET_HEADER header;
+	header.byCode = dfPACKET_CODE;
+	header.bySize = 9;
+	header.byType = dfPACKET_SC_ATTACK2;
+	packet->Clear();
+	packet->PutData((char*)&header, sizeof(st_PACKET_HEADER));
+	*packet << SessionID;
+	*packet << Direct;
+	*packet << X;
+	*packet << Y;
+}
+
+void mpAttack003(Packet* packet, unsigned int SessionID, unsigned char Direct, short X, short Y)
+{
+	st_PACKET_HEADER header;
+	header.byCode = dfPACKET_CODE;
+	header.bySize = 9;
+	header.byType = dfPACKET_SC_ATTACK3;
+	packet->Clear();
+	packet->PutData((char*)&header, sizeof(st_PACKET_HEADER));
+	*packet << SessionID;
+	*packet << Direct;
+	*packet << X;
+	*packet << Y;
+}
+
 void mpDamage(Packet* packet, unsigned int AttackID, unsigned int DamageID, char Damage)
 {
 	st_PACKET_HEADER header;

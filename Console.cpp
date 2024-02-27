@@ -1,6 +1,4 @@
-#include <conio.h>
-#include <stdio.h>
-#include <Windows.h>
+#include "Console.h"
 
 bool Shutdown = false;
 
@@ -22,6 +20,9 @@ void ServerControl()
 			// 관련 키 도움말 출력
 			wprintf(L"Control Mode : Press Q - Quit \n");
 			wprintf(L"Control Mode : Press L - Key Lock \n");
+			wprintf(L"Control Mode : Press 1 - Log Level Debug \n");
+			wprintf(L"Control Mode : Press 2 - Log Level Error \n");
+			wprintf(L"Control Mode : Press 3 - Log Level System \n");
 		}
 
 		// 키보드 제어 잠금
@@ -38,5 +39,23 @@ void ServerControl()
 		}
 
 		// 나중에 추가할 것.
+		// 로그 레벨 수정
+		if (L'1' == ControlKey && ControlMode)
+		{
+			wprintf(L"Control : Log Level - Debug\n");
+			gLogLevel = LOG_LEVEL_DEBUG;
+		}
+
+		if (L'2' == ControlKey && ControlMode)
+		{
+			wprintf(L"Control : Log Level - Error\n");
+			gLogLevel = LOG_LEVEL_ERROR;
+		}
+
+		if (L'3' == ControlKey && ControlMode)
+		{
+			wprintf(L"Control : Log Level - System\n");
+			gLogLevel = LOG_LEVEL_SYSTEM;
+		}
 	}
 }

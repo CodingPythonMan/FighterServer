@@ -21,9 +21,6 @@
     <ClCompile Include="Network.cpp">
       <Filter>Network</Filter>
     </ClCompile>
-    <ClCompile Include="Console.cpp">
-      <Filter>Game</Filter>
-    </ClCompile>
     <ClCompile Include="RingBuffer.cpp">
       <Filter>Network</Filter>
     </ClCompile>
@@ -54,13 +51,13 @@
     <ClCompile Include="Log.cpp">
       <Filter>Util</Filter>
     </ClCompile>
+    <ClCompile Include="Console.cpp">
+      <Filter>Util</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Network.h">
       <Filter>Network</Filter>
-    </ClInclude>
-    <ClInclude Include="Console.h">
-      <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Session.h">
       <Filter>Network</Filter>
@@ -99,6 +96,9 @@
       <Filter>Game</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
+      <Filter>Util</Filter>
+    </ClInclude>
+    <ClInclude Include="Console.h">
       <Filter>Util</Filter>
     </ClInclude>
   </ItemGroup>

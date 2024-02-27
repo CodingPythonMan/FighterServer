@@ -159,9 +159,13 @@ void Network::AcceptProc()
 			clientSock = GetLastError();
 
 			if (clientSock == WSAEWOULDBLOCK)
+			{
 				break;
+			}
 			else if (clientSock == WSAECONNRESET)
+			{
 				continue;
+			}
 			else
 			{
 				_LOG(LOG_LEVEL_ERROR, L"[Accept Error] ErrorCode : %d", (int)clientSock);
@@ -259,7 +263,10 @@ void Network::ReadProc(SOCKET sock)
 		retval = GetLastError();
 
 		if (retval == WSAEWOULDBLOCK)
+		{
 			return;
+		}
+		//else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
 		else if (retval == WSAECONNRESET)
 		{
 			DisconnectSession(session);
@@ -341,7 +348,10 @@ bool Network::WriteProc(SOCKET sock)
 			retval = GetLastError();
 
 			if (retval == WSAEWOULDBLOCK)
+			{
 				break;
+			}
+			//else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
 			else if (retval == WSAECONNRESET)
 			{
 				DisconnectSession(session);

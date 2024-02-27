@@ -31,7 +31,7 @@ int RingBuffer::GetUseSize()
 
 	if (size < 0)
 	{
-		size = BufferSize + size;
+		size += BufferSize + 1;
 	}
 
 	return size;
@@ -44,21 +44,21 @@ int RingBuffer::GetFreeSize()
 
 int RingBuffer::Enqueue(char* src, int size)
 {
+	// 성능상 이유로, Enqueue 실패할 때는 Enqueue 를 호출하기전 걸러냈어야 한다.
+	// 필요한 조건문은 GetFreeSize 로 조사하면 된다.
 	if (size > 0)
 	{
-		Rear++;
-
 		if (Rear + size > BufferSize)
 		{
-			int rest = BufferSize + 1 - Rear;
-			memcpy(&Buffer[Rear], src, rest);
+			int rest = BufferSize - Rear;
+			memcpy(&Buffer[Rear + 1], src, rest);
 			memcpy(&Buffer[0], src + rest, size - rest);
-			Rear = size - rest - 1;
+			Rear += size - BufferSize - 1;
 		}
 		else
 		{
-			memcpy(&Buffer[Rear], src, size);
-			Rear += size - 1;
+			memcpy(&Buffer[Rear + 1], src, size);
+			Rear += size;
 		}
 	}
 	else
@@ -66,26 +66,26 @@ int RingBuffer::Enqueue(char* src, int size)
 		size = 0;
 	}
 
+
 	return size;
 }
 
 int RingBuffer::Dequeue(char* dest, int size)
 {
+	// 성능상 이유로, Dequeue 실패할 때는 Dequeue 를 호출하기전 걸러냈어야 한다.
 	if (size > 0)
 	{
-		Front++;
-
 		if (Front + size > BufferSize)
 		{
-			int rest = BufferSize + 1 - Front;
-			memcpy(dest, &Buffer[Front], rest);
+			int rest = BufferSize - Front;
+			memcpy(dest, &Buffer[Front + 1], rest);
 			memcpy(dest + rest, &Buffer[0], size - rest);
-			Front = size - rest - 1;
+			Front += size - BufferSize - 1;
 		}
 		else
 		{
-			memcpy(dest, &Buffer[Front], size);
-			Front += size - 1;
+			memcpy(dest, &Buffer[Front + 1], size);
+			Front += size;
 		}
 	}
 	else
@@ -100,7 +100,7 @@ int RingBuffer::Peek(char* dest, int size)
 {
 	if (size > 0)
 	{
-		if (Front + 1 + size > BufferSize)
+		if (Front + size > BufferSize)
 		{
 			int rest = BufferSize - Front;
 			memcpy(dest, &Buffer[Front + 1], rest);
@@ -156,9 +156,9 @@ int RingBuffer::MoveRear(int size)
 {
 	if (size > 0)
 	{
-		if (Rear + 1 + size > BufferSize)
+		if (Rear + size > BufferSize)
 		{
-			Rear = Rear + size - BufferSize - 1;
+			Rear += size - BufferSize - 1;
 		}
 		else
 		{
@@ -173,9 +173,9 @@ int RingBuffer::MoveFront(int size)
 {
 	if (size > 0)
 	{
-		if (Front + 1 + size > BufferSize)
+		if (Front + size > BufferSize)
 		{
-			Front = Front + size - BufferSize - 1;
+			Front += size - BufferSize - 1;
 		}
 		else
 		{
@@ -204,4 +204,9 @@ char* RingBuffer::GetRearBufferPtr()
 		IncreaseRear = Rear + 1;
 
 	return &Buffer[IncreaseRear];
+}
+
+char* RingBuffer::GetStartBufferPtr()
+{
+	return Buffer;
 }

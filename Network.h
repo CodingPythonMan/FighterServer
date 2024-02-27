@@ -3,7 +3,7 @@
 #include "Packet.h"
 #include "Character.h"
 
-#define SERVER_PORT 20000
+#define SERVER_PORT 11355
 
 class Network
 {

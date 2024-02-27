@@ -26,12 +26,17 @@ void SendPacket_SectorOne(int sectorX, int sectorY, Packet* packet, Session* exc
 void SendPacket_Unicast(Session* session, Packet* packet)
 {
 	if (session->SendQ.GetFreeSize() > packet->GetDataSize())
+	{
 		session->SendQ.Enqueue((char*)packet->GetBufferPtr(), packet->GetDataSize());
+	}
 	else
 	{
 		_LOG(LOG_LEVEL_ERROR, L"%s", L"SendPacket => RingBuffer Full Error!");
 		// SendQ 를 초과하면 연결을 바로 끊는다.
-		DisconnectSession(session);
+		// DisconnectSession(session);
+		// Disconnect 로 처리해주지 않는 이유는 2개가 한번에 링버퍼가 꽉찰 경우
+		// 안에서 부르는 패킷으로 재귀적으로 호출해주기 때문이다.
+		_deleteList.push_back(session);
 	}
 }
 

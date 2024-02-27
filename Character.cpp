@@ -5,7 +5,7 @@ std::map<unsigned int, Character*> gCharacterMap;
 // 월드맵 캐릭터 섹터
 std::list<Character*> gSector[dfSECTOR_MAX_Y][dfSECTOR_MAX_X];
 
-int Temp = 0;
+//int Temp = 0;
 
 Character::Character(Session* sessionPtr, unsigned int sessionID)
 {
@@ -17,6 +17,7 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 	X = rand() % dfRANGE_MOVE_RIGHT;
 	Y = rand() % dfRANGE_MOVE_BOTTOM;
 
+	/*
 	if (Temp == 0)
 	{
 		X = 6300;
@@ -40,7 +41,7 @@ Character::Character(Session* sessionPtr, unsigned int sessionID)
 		X = 330;
 		Y = 330;
 		Temp++;
-	}
+	}*/
 
 	Sector.X = X / dfSECTOR_GRID_X;
 	Sector.Y = Y / dfSECTOR_GRID_Y;

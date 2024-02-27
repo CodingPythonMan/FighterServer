@@ -241,10 +241,19 @@ void Network::ReadProc(SOCKET sock)
 
 	int retval;
 	int recvAvailableSize = session->RecvQ.DirectEnqueueSize();
+
+	// Rear 가 끝에 도달
+	if (recvAvailableSize == 0)
+	{
+		recvAvailableSize = session->RecvQ.GetFreeSize();
+		if (recvAvailableSize == 0)
+			return;
+	}
+
 	char* ptr = session->RecvQ.GetRearBufferPtr();
 	retval = recv(session->Socket, ptr, recvAvailableSize, 0);
 	session->RecvQ.MoveRear(retval);
-
+	
 	if (retval == SOCKET_ERROR)
 	{
 		retval = GetLastError();
@@ -269,7 +278,7 @@ void Network::ReadProc(SOCKET sock)
 	
 	while (1)
 	{
-		// Peek 전에 오류 나버린다.r
+		// Header 만큼 모이지 않았다면, 다음에 진행해야 한다.
 		if (session->RecvQ.GetUseSize() <= sizeof(st_PACKET_HEADER))
 			break;
 
@@ -280,7 +289,10 @@ void Network::ReadProc(SOCKET sock)
 
 		// 프로토콜 코드가 맞지 않다면 내보낸다.
 		if (header.byCode != 0x89)
+		{
+			_LOG(LOG_LEVEL_ERROR, L"[Read Error] Header is not correct : %d", header.byCode);
 			break;
+		}
 
 		// 마샬링
 		Packet packet;
@@ -311,6 +323,15 @@ bool Network::WriteProc(SOCKET sock)
 
 		int retval;
 		int sendAvailableSize = session->SendQ.DirectDequeueSize();
+
+		// Front 가 끝에 도달
+		if (sendAvailableSize == 0)
+		{
+			sendAvailableSize = session->SendQ.GetUseSize();
+			if (sendAvailableSize == 0)
+				return false;
+		}
+
 		char* ptr = session->SendQ.GetFrontBufferPtr();
 		retval = send(session->Socket, ptr, sendAvailableSize, 0);
 		session->SendQ.MoveFront(retval);
@@ -324,6 +345,11 @@ bool Network::WriteProc(SOCKET sock)
 			else if (retval == WSAECONNRESET)
 			{
 				DisconnectSession(session);
+				return true;
+			}
+			else
+			{
+				_LOG(LOG_LEVEL_ERROR, L"[Write Error] ErrorCode : %d", retval);
 				return true;
 			}
 		}
@@ -376,8 +402,16 @@ Session* Network::CreateSession(SOCKET socket)
 
 void Network::DeleteSessions()
 {
+	SOCKADDR_IN clientAddr;
+	WCHAR IP[16];
+	int addrLen = sizeof(clientAddr);
 	for (auto iter = _deleteList.begin(); iter != _deleteList.end(); ++iter)
 	{
+		getpeername((*iter)->Socket, (SOCKADDR*)&clientAddr, &addrLen);
+		InetNtop(AF_INET, &clientAddr.sin_addr, IP, 16);
+		_LOG(LOG_LEVEL_DEBUG, L"[Client Disconnect] ID : %d, IP : %s, Port : %d",
+			_uniqueID, IP, ntohs(clientAddr.sin_port));
+
 		_sessionMap.erase((*iter)->Socket);
 		delete FindCharacter((*iter)->SessionID);
 		closesocket((*iter)->Socket);

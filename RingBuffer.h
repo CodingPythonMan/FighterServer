@@ -1,6 +1,6 @@
 #pragma once
 
-#define RING_DEFAULT_SIZE 20000
+#define RING_DEFAULT_SIZE 10000
 
 class RingBuffer {
 public:
@@ -45,7 +45,9 @@ public:
 	// 버퍼의 RearPos 포인터 얻음.
 	char* GetRearBufferPtr();
 
-private:
+	// 버퍼의 처음포인터 얻음.
+	char* GetStartBufferPtr();
+
 	int Front;
 	int Rear;
 	int BufferSize;

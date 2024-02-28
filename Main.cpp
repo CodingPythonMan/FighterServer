@@ -47,9 +47,6 @@ int main()
 		// 키보드 입력을 통해서 서버를 제어할 경우 사용
 		ServerControl();
 
-		// 모니터링 정보를 표시, 저장, 전송하는 경우 사용
-		// Monitor();
-
 		curTime = timeGetTime();
 		if (curTime - frameTime >= 1000)
 		{

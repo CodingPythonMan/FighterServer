@@ -6,3 +6,5 @@ void Update();
 void SendMoveStartNewSection(Character* character);
 
 void CheckLastReceiveTime();
+
+void Monitor();

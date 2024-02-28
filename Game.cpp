@@ -7,14 +7,20 @@
 #include "GameInfo.h"
 
 unsigned int CallUpdate = 0;
+unsigned int MonitorUpdate = MONITOR_TIME;
 
 void Update()
 {
 	CallUpdate++;
 
+	// 한번 넣어보고 정확하지 않으면 다른 장소로 빼도 된다.
 	if (CallUpdate >= FPS)
 	{
 		CheckLastReceiveTime();
+
+		// 모니터링 정보를 표시, 저장, 전송하는 경우 사용
+		Monitor();
+
 		CallUpdate = 0;
 	}
 
@@ -157,5 +163,17 @@ void CheckLastReceiveTime()
 		{
 			DisconnectSession(character->SessionPtr);
 		}
+	}
+}
+
+void Monitor()
+{
+	MonitorUpdate++;
+
+	if (MonitorUpdate >= MONITOR_TIME)
+	{
+		_LOG(LOG_LEVEL_SYSTEM, L"Monitor => Users : %d", (int)gCharacterMap.size());
+
+		MonitorUpdate = 0;
 	}
 }

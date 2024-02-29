@@ -171,7 +171,7 @@ void Network::AcceptProc()
 				_LOG(LOG_LEVEL_ERROR, L"[Accept Error] ErrorCode : %d", (int)clientSock);
 			}
 		}
-		
+
 		// 세션 생성
 		Session* session = CreateSession(clientSock);
 
@@ -199,7 +199,7 @@ void Network::AcceptProc()
 		SendPacket_Around(session, &CreateOtherChar);
 
 		// 3. 다른 사람 위치 받기
-		SectorPos pos = FindSectorPos(session->SessionID);
+		SectorPos pos = character->Sector;
 
 		std::list<Character*> characterList = gSector[pos.Y][pos.X];
 		for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
@@ -213,7 +213,7 @@ void Network::AcceptProc()
 			SendPacket_Unicast(session, &CreateOtherChar);
 		}
 
-		// 8방향에 대해서 Sector Send
+		// 4. 접속 주위 8방향에 있는 다른 캐릭터 받기
 		for (int i = 0; i < 8; i++)
 		{
 			int dX = pos.X + dx[i];
@@ -280,6 +280,9 @@ void Network::ReadProc(SOCKET sock)
 	}
 	else if (retval == 0)
 	{
+		// 리턴값이 0인 건 종료 표시
+		// IO_PENDING 이 뜰거라면 SOCKET_ERROR -1 로 GetLastError 시 WOULDBLOCK
+		// IO_PENDING 이 뜬다는 건, 수신 버퍼에서 읽어올 게 없다는 뜻.(수신버퍼 0)
 		DisconnectSession(session);
 	}
 	

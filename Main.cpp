@@ -63,7 +63,7 @@ int main()
 	// DB에 저장할 데이터나 기타 마무리 할 일들이 모두 끝났는지 확인한 뒤 쓴다.
 	network.CleanUp();
 
-	//ProfileDataOutText(L"WhatIsThis.txt");
+	//ProfileDataOutText(L"Profile.txt");
 
 	return 0;
 }

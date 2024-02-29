@@ -4,7 +4,7 @@
 #include <list>
 
 void SendPacket_SectorOne(int sectorX, int sectorY, Packet* packet, Session* exceptSession);
-void SendPacket_Unicast(Session* session, Packet* packet);
+inline void SendPacket_Unicast(Session* session, Packet* packet);
 void SendPacket_Around(Session* session, Packet* packet, bool me = false);
 
 void DisconnectSession(Session* session);

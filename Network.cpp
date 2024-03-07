@@ -168,7 +168,7 @@ void Network::AcceptProc()
 			}
 			else
 			{
-				_LOG(LOG_LEVEL_ERROR, L"[Accept Error] ErrorCode : %d", (int)clientSock);
+				_LOG(LOG_LEVEL_SYSTEM, L"[Accept Error] ErrorCode : %d", (int)clientSock);
 			}
 		}
 
@@ -185,18 +185,17 @@ void Network::AcceptProc()
 		Character* character = new Character(session, _uniqueID);
 
 		// 1. 당사자에게 생성됐음을 알려주기
-		Packet CreateMyChar;
-		mpCreateMyCharacter(&CreateMyChar, _uniqueID, character->Direct,
+		Packet packet;
+		mpCreateMyCharacter(&packet, _uniqueID, character->Direct,
 			character->X, character->Y, character->HP);
 
-		SendPacket_Unicast(session, &CreateMyChar);
+		SendPacket_Unicast(session, &packet);
 
 		// 2. 다른 사람에게 알려주기
-		Packet CreateOtherChar;
-		mpCreateOtherCharacter(&CreateOtherChar, _uniqueID, character->Direct,
+		mpCreateOtherCharacter(&packet, _uniqueID, character->Direct,
 			character->X, character->Y, character->HP);
 
-		SendPacket_Around(session, &CreateOtherChar);
+		SendPacket_Around(session, &packet);
 
 		// 3. 다른 사람 위치 받기
 		SectorPos pos = character->Sector;
@@ -208,9 +207,9 @@ void Network::AcceptProc()
 			if (character->SessionPtr == session)
 				continue;
 
-			mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
+			mpCreateOtherCharacter(&packet, character->SessionID, character->Direct,
 				character->X, character->Y, character->HP);
-			SendPacket_Unicast(session, &CreateOtherChar);
+			SendPacket_Unicast(session, &packet);
 		}
 
 		// 4. 접속 주위 8방향에 있는 다른 캐릭터 받기
@@ -227,9 +226,9 @@ void Network::AcceptProc()
 			for (auto iter = characterList.begin(); iter != characterList.end(); ++iter)
 			{
 				character = *iter;
-				mpCreateOtherCharacter(&CreateOtherChar, character->SessionID, character->Direct,
+				mpCreateOtherCharacter(&packet, character->SessionID, character->Direct,
 					character->X, character->Y, character->HP);
-				SendPacket_Unicast(session, &CreateOtherChar);
+				SendPacket_Unicast(session, &packet);
 			}
 		}
 
@@ -266,15 +265,14 @@ void Network::ReadProc(SOCKET sock)
 		{
 			return;
 		}
-		//else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
-		else if (retval == WSAECONNRESET)
+		else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
 		{
 			DisconnectSession(session);
 			return;
 		}
 		else
 		{
-			_LOG(LOG_LEVEL_ERROR, L"[Read Error] ErrorCode : %d", retval);
+			_LOG(LOG_LEVEL_SYSTEM, L"[Read Error] ErrorCode : %d", retval);
 			return;
 		}
 	}
@@ -306,8 +304,8 @@ void Network::ReadProc(SOCKET sock)
 
 		// 마샬링
 		Packet packet;
-		retval = session->RecvQ.Dequeue(packet.GetBufferPtr(), sizeof(st_PACKET_HEADER) + header.bySize);
-		packet.GetData((char*)&header, sizeof(st_PACKET_HEADER));
+		session->RecvQ.MoveFront(sizeof(st_PACKET_HEADER));
+		retval = session->RecvQ.Dequeue(packet.GetBufferPtr(), header.bySize);
 
 		// 왔다면 시간 갱신
 		session->LastRecvTime = timeGetTime();
@@ -354,8 +352,7 @@ bool Network::WriteProc(SOCKET sock)
 			{
 				break;
 			}
-			//else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
-			else if (retval == WSAECONNRESET)
+			else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
 			{
 				DisconnectSession(session);
 				return true;

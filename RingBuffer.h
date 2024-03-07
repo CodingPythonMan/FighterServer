@@ -1,6 +1,6 @@
 #pragma once
 
-#define RING_DEFAULT_SIZE 20000
+#define RING_DEFAULT_SIZE 5000
 
 class RingBuffer {
 public:

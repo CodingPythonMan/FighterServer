@@ -255,17 +255,12 @@ void Network::ReadProc(SOCKET sock)
 
 	char* ptr = session->RecvQ.GetRearBufferPtr();
 	retval = recv(session->Socket, ptr, recvAvailableSize, 0);
-	session->RecvQ.MoveRear(retval);
 	
 	if (retval == SOCKET_ERROR)
 	{
 		retval = GetLastError();
 
-		if (retval == WSAEWOULDBLOCK)
-		{
-			return;
-		}
-		else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
+		if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
 		{
 			DisconnectSession(session);
 			return;
@@ -283,6 +278,8 @@ void Network::ReadProc(SOCKET sock)
 		// IO_PENDING 이 뜬다는 건, 수신 버퍼에서 읽어올 게 없다는 뜻.(수신버퍼 0)
 		DisconnectSession(session);
 	}
+
+	session->RecvQ.MoveRear(retval);
 	
 	while (1)
 	{
@@ -318,52 +315,48 @@ void Network::ReadProc(SOCKET sock)
 bool Network::WriteProc(SOCKET sock)
 {
 	Session* session = FindSession(sock);
+
 	if (session == nullptr)
 	{
 		_LOG(LOG_LEVEL_ERROR, L"%s", L"WriteProc => Cannot Find Session!");
 		return true;
 	}
-		
-	while (1)
+
+	int retval;
+	int sendAvailableSize = session->SendQ.DirectDequeueSize();
+	
+	// Front 가 끝에 도달
+	if (sendAvailableSize == 0)
 	{
-		if (session->SendQ.GetUseSize() <= 0)
-			break;
-
-		int retval;
-		int sendAvailableSize = session->SendQ.DirectDequeueSize();
-
-		// Front 가 끝에 도달
+		sendAvailableSize = session->SendQ.GetUseSize();
 		if (sendAvailableSize == 0)
+			return false;
+	}
+
+	char* ptr = session->SendQ.GetFrontBufferPtr();
+	retval = send(session->Socket, ptr, sendAvailableSize, 0);
+
+	if (retval == SOCKET_ERROR)
+	{
+		retval = GetLastError();
+
+		// WSAECONNABORTED 클라쪽에서 끊은 연결
+		// WSAECONNRESET 우리쪽에서 끊었을 수 있음
+		if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
 		{
-			sendAvailableSize = session->SendQ.GetUseSize();
-			if (sendAvailableSize == 0)
-				return false;
+			DisconnectSession(session);
+			return true;
 		}
-
-		char* ptr = session->SendQ.GetFrontBufferPtr();
-		retval = send(session->Socket, ptr, sendAvailableSize, 0);
-		session->SendQ.MoveFront(retval);
-
-		if (retval == SOCKET_ERROR)
+		else
 		{
-			retval = GetLastError();
-
-			if (retval == WSAEWOULDBLOCK)
-			{
-				break;
-			}
-			else if (retval == WSAECONNRESET || retval == WSAECONNABORTED)
-			{
-				DisconnectSession(session);
-				return true;
-			}
-			else
-			{
-				_LOG(LOG_LEVEL_ERROR, L"[Write Error] ErrorCode : %d", retval);
-				return true;
-			}
+			DisconnectSession(session);
+			_LOG(LOG_LEVEL_ERROR, L"[Write Error] ErrorCode : %d", retval);
+			return true;
 		}
 	}
+
+	// send 를 못할 상황일 때, MoveFront 를 하면 안된다.
+	session->SendQ.MoveFront(retval);
 
 	return false;
 }

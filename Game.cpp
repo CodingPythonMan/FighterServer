@@ -79,11 +79,12 @@ void Update()
 		{
 			character->X += dx;
 			character->Y += dy;
-		}
-		else if (SectorUpdateCharacter(character))
-		{
-			SectorUpdatePacket(character);
-			SendMoveStartNewSection(character);
+
+			if (SectorUpdateCharacter(character))
+			{
+				SectorUpdatePacket(character);
+				SendMoveStartNewSection(character);
+			}
 		}
 	}
 }

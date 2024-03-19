@@ -210,6 +210,13 @@ void Network::AcceptProc()
 			mpCreateOtherCharacter(&packet, character->SessionID, character->Direct,
 				character->X, character->Y, character->HP);
 			SendPacket_Unicast(session, &packet);
+
+			if (character->MoveDirect >= dfPACKET_MOVE_STOP)
+				continue;
+
+			mpMoveStart(&packet, character->SessionID, character->MoveDirect,
+				character->X, character->Y);
+			SendPacket_Unicast(session, &packet);
 		}
 
 		// 4. 접속 주위 8방향에 있는 다른 캐릭터 받기
@@ -228,6 +235,13 @@ void Network::AcceptProc()
 				character = *iter;
 				mpCreateOtherCharacter(&packet, character->SessionID, character->Direct,
 					character->X, character->Y, character->HP);
+				SendPacket_Unicast(session, &packet);
+
+				if (character->MoveDirect >= dfPACKET_MOVE_STOP)
+					continue;
+
+				mpMoveStart(&packet, character->SessionID, character->MoveDirect,
+					character->X, character->Y);
 				SendPacket_Unicast(session, &packet);
 			}
 		}
